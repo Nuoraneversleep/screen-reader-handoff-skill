@@ -11,19 +11,24 @@ For example, a subscribe button might read:
 
 That breaks down as: Description ("Subscribe now") → Element Type ("button") → Action hint ("Double tap to activate. Opens external browser.").
 
-## The 9 Columns
+## The 10 Columns
 
 | # | Column | What to Write | Examples |
 |---|--------|--------------|----------|
-| 1 | **Component** | Your design system name for the element. Helps engineers locate it in code. | `Featured card`, `Save button`, `Close button` |
-| 2 | **Element Type** | What type of thing it is. One of: `Button`, `Toggle button`, `Switch`, `Checkbox`, `Radio button`, `Image`, `Heading`, `Tab`, `Link`, `None`. Use `None` for decorative or live-region-only elements. | `Button`, `Heading`, `Image`, `None` |
-| 3 | **Description** | The spoken label. Write in sentence case. Use `[brackets]` for dynamic content. Write `Decorative` for elements that should be hidden. | `Close`, `Free trial offer timeline`, `[User's first name]`, `Decorative` |
-| 4 | **State** | Custom state like `Playing, 2:15 of 4:30`. **Leave blank for Switch / Checkbox / Radio / selectable cells** — the system auto-announces the binary state and adding it causes double announcements. | `none`, `Playing, 2:15 of 4:30`, `3 of 5`, `75 percent` |
-| 5 | **Grouping** | `Standalone` for solo elements. `Parent of N` for containers that merge children into one announcement. `Merged into parent` for children that should not be swiped to individually. | `Standalone`, `Parent of 3`, `Merged into parent` |
-| 6 | **Hidden** | `Yes` for decorative icons, redundant labels, background images. Engineers apply `clearAndSetSemantics`. | `No`, `Yes` |
-| 7 | **Action** | Every action a user can perform on this element, in priority order. The first item becomes the default tap action; the rest go to TalkBack's swipe up/down menu. Use `None` for elements with no actions. | `Subscribe`, `Open article, Save for later, Share`, `None` |
-| 8 | **Announce on change** | `Polite` = waits for the user to pause (toasts, confirmations). `Assertive` = interrupts immediately (errors, breaking news). `None` = no announcement. | `None`, `Polite`, `Assertive` |
-| 9 | **TalkBack example** | The full sentence TalkBack speaks aloud, in order: description, state, element type, action hint. Read it aloud to sanity-check — if it sounds awkward, rewrite the description. | `Subscribe now, button. Double tap to activate.` |
+| 1 | **Order** | Number each element in swipe order (top-to-bottom, left-to-right). **Only number what TalkBack actually focuses on:** standalone elements and parents. Leave blank for `Merged into parent` rows and `Hidden: Yes` rows — those aren't read as their own focus stops. | `1`, `2`, *(blank)* |
+| 2 | **Component** | Your design system name for the element. Helps engineers locate it in code. | `Featured card`, `Save button`, `Close button` |
+| 3 | **Element Type** | What type of thing it is. One of: `Button`, `Toggle button`, `Switch`, `Checkbox`, `Radio button`, `Image`, `Heading`, `Tab`, `Link`, `None`. Use `None` for decorative or live-region-only elements. | `Button`, `Heading`, `Image`, `None` |
+| 4 | **Description** | The spoken label. Write in sentence case. Use `[brackets]` for dynamic content. Write `Decorative` for elements that should be hidden. | `Close`, `Free trial offer timeline`, `[User's first name]`, `Decorative` |
+| 5 | **State** | Custom state like `Playing, 2:15 of 4:30`. **Leave blank for Switch / Checkbox / Radio / selectable cells** — the system auto-announces the binary state and adding it causes double announcements. | `none`, `Playing, 2:15 of 4:30`, `3 of 5`, `75 percent` |
+| 6 | **Grouping** | `Standalone` for solo elements. `Parent of N` for containers that merge children into one announcement. `Merged into parent` for children that should not be swiped to individually. | `Standalone`, `Parent of 3`, `Merged into parent` |
+| 7 | **Hidden** | `Yes` for decorative icons, redundant labels, background images. Engineers apply `clearAndSetSemantics`. | `No`, `Yes` |
+| 8 | **Action** | Every action a user can perform on this element, in priority order. The first item becomes the default tap action; the rest go to TalkBack's swipe up/down menu. Use `None` for elements with no actions. | `Subscribe`, `Open article, Save for later, Share`, `None` |
+| 9 | **Announce on change** | `Polite` = waits for the user to pause (toasts, confirmations). `Assertive` = interrupts immediately (errors, breaking news). `None` = no announcement. | `None`, `Polite`, `Assertive` |
+| 10 | **TalkBack example** | The full sentence TalkBack speaks aloud, in order: description, state, element type, action hint. Read it aloud to sanity-check — if it sounds awkward, rewrite the description. | `Subscribe now, button. Double tap to activate.` |
+
+### Order — Only Number What's Focusable
+
+Number rows in the sequence a TalkBack user swipes through them. Give a number only to rows that are their own focus stop — `Standalone` elements and `Parent of N` containers. **Leave Order blank** for `Merged into parent` and `Hidden: Yes` rows: they're listed for engineer clarity but TalkBack never lands on them, so they take no position in the swipe sequence.
 
 ## Element Type Guide
 

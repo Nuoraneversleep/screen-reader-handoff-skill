@@ -43,8 +43,8 @@ Or copy the files manually into either location. The skill directory must contai
 | File | Purpose |
 |------|---------|
 | `SKILL.md` | Main skill instructions — workflow, quality checklist, common UI patterns |
-| `voiceover-schema.md` | iOS VoiceOver 9-column table schema and column-by-column guidance |
-| `talkback-schema.md` | Android TalkBack 9-column table schema and platform differences |
+| `voiceover-schema.md` | iOS VoiceOver 11-column table schema and column-by-column guidance |
+| `talkback-schema.md` | Android TalkBack 10-column table schema and platform differences |
 | `examples.md` | 4 fully annotated example tables with best-practice explanations |
 
 ## Usage

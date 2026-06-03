@@ -29,7 +29,7 @@ That breaks down as: Label ("Subscribe now") → Type ("button") → Hint ("Open
 | 10 | **Example** | The **full sentence VoiceOver speaks aloud**. Read it aloud to verify it sounds natural. | `Subscribe now, button. Opens an external website.` |
 | 11 | **Notes on Documentation** | Guidance for engineers. Use `•` bullet points. Write just `•` if none needed. | `• Warn user before opening external browser` |
 
-> **Column order matches the TalkBack template.** Same name → same column position. The Android version drops `Order`, `Hint`, and `Notes`, and adds `Announce on change`. Everything else lines up so you can review iOS and Android specs side-by-side.
+> **Column order matches the TalkBack template.** Same name → same column position. Both templates share the `Order` column (number focus stops, blank for merged/hidden rows). The Android version drops `Hint` and `Notes`, and adds `Announce on change`. Everything else lines up so you can review iOS and Android specs side-by-side.
 
 ## Trait Guide
 
