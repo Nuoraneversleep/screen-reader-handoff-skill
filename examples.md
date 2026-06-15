@@ -104,20 +104,20 @@ Order	Component	Trait	Label	Value	Grouping	Hidden	Actions	Hint	Example	Notes on 
 The same subscription paywall from Example 1, but for Android TalkBack. Rows are listed in swipe order (top-to-bottom, left-to-right).
 
 ```
-Order	Component	Element Type	Description	State	Grouping	Hidden	Action	Announce on change	TalkBack example
-1	Close button	Button	Close	none	Standalone	No	Dismiss	None	Close, button. Double tap to activate.
-2	Page header	Heading	none	none	Standalone	No	None	None	Subscribe to gain unlimited access to all of The Times, heading
-3	Plan title	None	none	none	Standalone	No	None	None	All Access
-4	Plan description	None	none	none	Standalone	No	None	None	News, plus Games, Cooking, Audio, Wirecutter and The Athletic.
-5	Learn more dropdown	Button	Learn more	Collapsed	Standalone	No	Expand	None	Learn more, Collapsed, button. Double tap to expand.
-6	Purchase channel label	Heading	none	none	Standalone	No	None	None	Buy through The New York Times, heading
-7	NYT purchase button	Button	$30, discounted to $4 per month	none	Standalone	No	Open in browser	None	$30, discounted to $4 per month, button. Double tap to activate. Opens external browser.
-8	NYT billing details	None	none	none	Standalone	No	None	None	Introductory offer: billed as $4 every four weeks for your first 6 months, then $30 every four weeks thereafter.
-9	Purchase channel label	Heading	none	none	Standalone	No	None	None	Buy through Apple, heading
-10	Apple purchase button	Button	$35, discounted to $5 per month	none	Standalone	No	Subscribe	None	$35, discounted to $5 per month, button. Double tap to activate.
-11	Apple billing details	None	none	none	Standalone	No	None	None	Introductory offer: billed as $5 every calendar month for your first 6 months, then $35 every calendar month thereafter.
-12	Continue link	Button	Continue without subscribing	none	Standalone	No	Dismiss	None	Continue without subscribing, button. Double tap to activate.
-13	Terms & Conditions	None	[Terms & Conditions copy with cancel link]	none	Parent of 1	No	None	None	[T&C copy]. Cancel, link.
+Order	Component	Element Type	Description	State	Grouping	Hidden	Action	Announce on change	TalkBack example	Notes
+1	Close button	Button	Close	none	Standalone	No	Dismiss	None	Close, button. Double tap to activate.	• On dismiss, return focus to whatever opened the paywall
+2	Page header	Heading	none	none	Standalone	No	None	None	Subscribe to gain unlimited access to all of The Times, heading	•
+3	Plan title	None	none	none	Standalone	No	None	None	All Access	•
+4	Plan description	None	none	none	Standalone	No	None	None	News, plus Games, Cooking, Audio, Wirecutter and The Athletic.	•
+5	Learn more dropdown	Button	Learn more	Collapsed	Standalone	No	Expand	None	Learn more, Collapsed, button. Double tap to expand.	• Announce expanded/collapsed state change politely
+6	Purchase channel label	Heading	none	none	Standalone	No	None	None	Buy through The New York Times, heading	•
+7	NYT purchase button	Button	$30, discounted to $4 per month	none	Standalone	No	Open in browser	None	$30, discounted to $4 per month, button. Double tap to activate. Opens external browser.	• Warn the user before leaving the app
+8	NYT billing details	None	none	none	Standalone	No	None	None	Introductory offer: billed as $4 every four weeks for your first 6 months, then $30 every four weeks thereafter.	•
+9	Purchase channel label	Heading	none	none	Standalone	No	None	None	Buy through Apple, heading	•
+10	Apple purchase button	Button	$35, discounted to $5 per month	none	Standalone	No	Subscribe	None	$35, discounted to $5 per month, button. Double tap to activate.	•
+11	Apple billing details	None	none	none	Standalone	No	None	None	Introductory offer: billed as $5 every calendar month for your first 6 months, then $35 every calendar month thereafter.	•
+12	Continue link	Button	Continue without subscribing	none	Standalone	No	Dismiss	None	Continue without subscribing, button. Double tap to activate.	•
+13	Terms & Conditions	None	[Terms & Conditions copy with cancel link]	none	Parent of 1	No	None	None	[T&C copy]. Cancel, link.	• Cancel link must be reachable via linear swipe
 ```
 
 ### Key Differences from iOS Version

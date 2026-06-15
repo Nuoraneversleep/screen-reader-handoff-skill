@@ -11,7 +11,7 @@ For example, a subscribe button might read:
 
 That breaks down as: Description ("Subscribe now") → Element Type ("button") → Action hint ("Double tap to activate. Opens external browser.").
 
-## The 10 Columns
+## The 11 Columns
 
 | # | Column | What to Write | Examples |
 |---|--------|--------------|----------|
@@ -25,6 +25,7 @@ That breaks down as: Description ("Subscribe now") → Element Type ("button") �
 | 8 | **Action** | Every action a user can perform on this element, in priority order. The first item becomes the default tap action; the rest go to TalkBack's swipe up/down menu. Use `None` for elements with no actions. | `Subscribe`, `Open article, Save for later, Share`, `None` |
 | 9 | **Announce on change** | `Polite` = waits for the user to pause (toasts, confirmations). `Assertive` = interrupts immediately (errors, breaking news). `None` = no announcement. | `None`, `Polite`, `Assertive` |
 | 10 | **TalkBack example** | The full sentence TalkBack speaks aloud, in order: description, state, element type, action hint. Read it aloud to sanity-check — if it sounds awkward, rewrite the description. | `Subscribe now, button. Double tap to activate.` |
+| 11 | **Notes** | Guidance for engineers — design intent that no other column captures (focus moves, dismissal behavior, what re-enables a control). Use `•` bullet points. Write just `•` if none needed. | `• On dismiss, return focus to the trigger` |
 
 ### Order — Only Number What's Focusable
 
@@ -143,6 +144,21 @@ Assemble the announcement in order: **Description, State, Element Type, Action h
 | Audio player | `Now playing, Playing, 2:15 of 4:30, button. Double tap to pause.` |
 
 Read each example aloud. If it sounds awkward, rewrite the description.
+
+### Notes — What to Tell Engineers
+
+The other columns capture what TalkBack *says*. Notes capture what TalkBack should *do* that isn't spoken — the design intent engineers can't infer from the announcement alone. Keep them about intent, not code.
+
+Good notes:
+- `• On dismiss, return focus to the More options button` — focus restoration after a menu/dialog closes
+- `• Menu is modal; Back gesture dismisses it and returns to the trigger` — escape route for an overlay
+- `• Once the article unlocks, re-enable and announce politely` — what flips a disabled control back on
+- `• Move focus to the first menu item when the menu opens`
+- `• Warn the user before leaving the app`
+
+Avoid: `• Set enabled = false` or `• Use requestFocus()` — name the behavior you want, not the API. The exception is the disabled convention itself: it's worth noting "set `enabled = false`, don't write `stateDescription`" because the *wrong* implementation double-announces.
+
+Notes is the last column in both the VoiceOver and TalkBack templates, so iOS and Android specs still line up side-by-side.
 
 ## How TalkBack Differs from VoiceOver
 
