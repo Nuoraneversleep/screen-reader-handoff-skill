@@ -13,21 +13,22 @@ That breaks down as: Label ("Subscribe now") → Type ("button") → Hint ("Open
 
 `Grouping` and `Hidden` don't add words to the announcement — they decide *whether* and *how* an element is focused in the first place.
 
-## The 11 Columns
+## The 12 Columns
 
 | # | Column | What to Write | Examples |
 |---|--------|--------------|----------|
 | 1 | **Order** | Number each element in swipe order (top-to-bottom, left-to-right). **Only number what VoiceOver actually focuses on:** standalone elements and parents. Leave blank for `Merged into parent` rows and `Hidden: Yes` rows — those don't get read as their own focus stops. | `1`, `2`, *(blank)* |
 | 2 | **Component** | Short name for the element — match the Figma layer name when possible | `Close button`, `Page header`, `Price information` |
-| 3 | **Trait** | What type of element is this? (see Trait Guide below) | `none`, `header`, `button`, `image` |
-| 4 | **Label** | What VoiceOver reads as the element's name. Write `none` if the visible text is already clear. | `none`, `Close`, `Free trial offer timeline` |
-| 5 | **Value** | Current state of the element if it changes. `none` for static elements. | `none`, `expanded`, `collapsed`, `1 of 6` |
-| 6 | **Grouping** | `Standalone`, `Parent of N (combined)`, `Parent of N (drill-in)`, or `Merged into parent`. See Grouping below. | `Standalone`, `Parent of 3 (combined)` |
-| 7 | **Hidden** | `Yes` for decorative elements that should be removed from VoiceOver. Engineers apply `accessibilityHidden = true`. | `No`, `Yes` |
-| 8 | **Actions** | What happens on double-tap. `none` for non-interactive text. | `none`, `Double tap opens external checkout page` |
-| 9 | **Hint** | Extra context spoken after the type — usually what will happen. `none` if unnecessary. | `none`, `Opens an external website.`, `Shows or hides subscription details.` |
-| 10 | **Example** | The **full sentence VoiceOver speaks aloud**. Read it aloud to verify it sounds natural. | `Subscribe now, button. Opens an external website.` |
-| 11 | **Notes on Documentation** | Guidance for engineers. Use `•` bullet points. Write just `•` if none needed. | `• Warn user before opening external browser` |
+| 3 | **Layer** | `Native` or `Web`. Which layer the element lives in — this decides the API and the owning team. On an all-native screen every row is `Native`. | `Native`, `Web` |
+| 4 | **Trait** | What type of element is this? (see Trait Guide below) | `none`, `header`, `button`, `image` |
+| 5 | **Label** | What VoiceOver reads as the element's name. Write `none` if the visible text is already clear. | `none`, `Close`, `Free trial offer timeline` |
+| 6 | **Value** | Current state of the element if it changes. `none` for static elements. | `none`, `expanded`, `collapsed`, `1 of 6` |
+| 7 | **Grouping** | `Standalone`, `Parent of N (combined)`, `Parent of N (drill-in)`, or `Merged into parent`. See Grouping below. | `Standalone`, `Parent of 3 (combined)` |
+| 8 | **Hidden** | `Yes` for decorative elements that should be removed from VoiceOver. Engineers apply `accessibilityHidden = true`. | `No`, `Yes` |
+| 9 | **Actions** | What happens on double-tap. `none` for non-interactive text. | `none`, `Double tap opens external checkout page` |
+| 10 | **Hint** | Extra context spoken after the type — usually what will happen. `none` if unnecessary. | `none`, `Opens an external website.`, `Shows or hides subscription details.` |
+| 11 | **Example** | The **full sentence VoiceOver speaks aloud**. Read it aloud to verify it sounds natural. | `Subscribe now, button. Opens an external website.` |
+| 12 | **Notes on Documentation** | Guidance for engineers. Use `•` bullet points. Write just `•` if none needed. | `• Warn user before opening external browser` |
 
 > **Column order matches the TalkBack template.** Same name → same column position. Both templates share the `Order` column (number focus stops, blank for merged/hidden rows). The Android version drops `Hint` and adds `Announce on change` in its place; `Notes` is the last column in both. Everything else lines up so you can review iOS and Android specs side-by-side.
 
@@ -116,8 +117,11 @@ Mark `Yes` for:
 - Decorative icons that have a labeled sibling (a heart icon next to "Save" button text)
 - Redundant labels
 - Background images and dividers
+- **Occluded content** — anything sitting underneath an overlay, gradient, or paywall
 
 Engineers will apply `accessibilityHidden = true`, which hides the element and all its descendants. Same effect as Android's `clearAndSetSemantics { }`.
+
+For occluded content, keep the real text in the **Label** column rather than writing something like "decorative" — the element becomes visible in other states, and the unpaywalled variant needs that exact text with `Hidden: No`. Occluded elements stay in the accessibility tree unless engineering hides them explicitly, which is how paywalled content leaks to VoiceOver users. When the occluded element lives in a WKWebView, `accessibilityHidden` cannot reach it — see the Layer column.
 
 **Order numbers**: leave blank for `Hidden: Yes` rows — VoiceOver skips them, so they don't take a position in the swipe sequence.
 

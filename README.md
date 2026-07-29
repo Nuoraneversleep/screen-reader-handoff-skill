@@ -15,11 +15,11 @@ No screen reader expertise required — the skill guides you through creating st
 
 Each row in the table is one element a screen reader user can focus on:
 
-| Order | Component | Trait | Label | Actions | Hint | Value | Example | Notes |
-|-------|-----------|-------|-------|---------|------|-------|---------|-------|
-| 1 | Close button | button | Close | Double tap to dismiss | none | none | Close, button | Icon needs explicit label |
-| 2 | Page header | header | none | none | none | none | Subscribe to..., heading | Enables rotor navigation |
-| 5 | Learn more | button | Learn more | Double tap to expand | Shows or hides details. | collapsed | Learn more, collapsed, button. Shows or hides details. | Value tracks state |
+| Order | Component | Layer | Trait | Label | Value | Grouping | Hidden | Actions | Hint | Example | Notes |
+|-------|-----------|-------|-------|-------|-------|----------|--------|---------|------|---------|-------|
+| 1 | Close button | Native | button | Close | none | Standalone | No | Double tap to dismiss | none | Close, button | Icon needs explicit label |
+| 2 | Page header | Native | header | none | none | Standalone | No | none | none | Subscribe to..., heading | Enables rotor navigation |
+| 5 | Learn more | Native | button | Learn more | collapsed | Standalone | No | Double tap to expand | Shows or hides details. | Learn more, collapsed, button. Shows or hides details. | Value tracks state |
 
 ## Installation
 
@@ -43,9 +43,9 @@ Or copy the files manually into either location. The skill directory must contai
 | File | Purpose |
 |------|---------|
 | `SKILL.md` | Main skill instructions — workflow, quality checklist, common UI patterns |
-| `voiceover-schema.md` | iOS VoiceOver 11-column table schema and column-by-column guidance |
-| `talkback-schema.md` | Android TalkBack 10-column table schema and platform differences |
-| `examples.md` | 4 fully annotated example tables with best-practice explanations |
+| `voiceover-schema.md` | iOS VoiceOver 12-column table schema and column-by-column guidance |
+| `talkback-schema.md` | Android TalkBack 12-column table schema and platform differences |
+| `examples.md` | 5 fully annotated example tables with best-practice explanations |
 
 ## Usage
 
@@ -69,6 +69,10 @@ The examples file explains key accessibility patterns with rationale:
 - **Carousels** use the Adjustable trait with item count and position
 - **Text with embedded links** needs rotor access guidance
 - **Decorative elements** (dividers, background shapes) should be hidden from screen readers
+- **Navigation chrome** is announced first, even when it sits at the bottom of the screen
+- **Terms and consent copy** precede any CTA they govern, regardless of visual position
+- **Occluded content** (behind a paywall or overlay) is hidden but keeps its real text
+- **Hybrid screens** mark each row `Native` or `Web` — the layer decides the API and the owning team
 
 ## Contributing
 

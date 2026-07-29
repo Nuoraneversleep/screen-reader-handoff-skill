@@ -36,12 +36,36 @@ Ask if not obvious:
 **If the user provides a Figma URL**, extract the design using MCP tools:
 
 ```
-Step 1: Call Figma MCP `get_file` or `get_node` to retrieve the screen structure.
-Step 2: If that fails, try `get_metadata` for an overview, then `get_design_context`
-        with forceCode: true for detailed node data.
-Step 3: Walk the node tree top-to-bottom, left-to-right to identify every visible
-        element: text, buttons, images, inputs, toggles, carousels, links.
+Step 1: Call `get_metadata` for the structural overview — node IDs, layer names,
+        types, positions, and sizes. Positions are what establish swipe order.
+Step 2: Call `get_screenshot` to see the screen. You need the visual to judge what
+        is decorative, what reads as a heading, and what groups together.
+Step 3: ONLY IF text is unreadable in the screenshot or a component's variant is
+        ambiguous, call `get_design_context`. Usually steps 1-2 are enough — Figma
+        auto-names text layers after their content, and the screenshot supplies the
+        rest. Skip it by default.
+Step 4: Walk the node tree and identify every visible element: text, buttons,
+        images, inputs, toggles, carousels, links.
 ```
+
+Extract the `fileKey` and `nodeId` from the Figma URL: for
+`figma.com/design/:fileKey/:fileName?node-id=1-2`, the `fileKey` is `:fileKey` and
+the `nodeId` is `1:2`. If the URL has no `node-id`, ask for a node-specific link —
+right-click the frame in Figma and choose **Copy link to selection**.
+
+**Watch for `hidden="true"` in the metadata.** Those layers are switched off in this
+variant and are not on screen — leave them out of the table entirely. That is a
+different thing from the `Hidden` column, which means *visible on screen but removed
+from the screen reader*. Do call out any switched-off layer that matters, though: a
+hidden "Already a subscriber? Log in." link may be the only escape route for a
+logged-out subscriber, and its absence is worth a question.
+
+**Check for occlusion.** Compare positions: an element can be present in the tree but
+sit underneath an overlay, gradient, or paywall. Anything covered should be `Hidden:
+Yes` — content behind a paywall stays in the accessibility tree by default, so a
+screen reader user can read paywalled text unless engineering explicitly clears it.
+Do the arithmetic rather than eyeballing it; child coordinates are relative to the
+parent frame, so add the offsets before comparing against the overlay's bounds.
 
 **If no Figma URL**, ask the user to describe the screen or provide a screenshot.
 
@@ -62,12 +86,72 @@ For every visible element on screen, ask:
 
 - Output as **TSV** (tab-separated values).
 - One header row, one row per element a screen reader user can focus on.
-- Order rows by **navigation sequence**: top-to-bottom, left-to-right (how a user would swipe through the screen).
-- Use `none` (lowercase) for empty cells — never leave cells blank.
+- Order rows by **announcement priority**, not visual position — see below.
+- Set **Layer** on every row to `Native` or `Web`. On an all-native screen every row is
+  `Native`; on a hybrid screen this decides which API and which team owns the row, so
+  read the hybrid-screens step before filling it in.
+- Use `none` (lowercase) for empty cells, with one exception: leave the Android
+  **State** cell truly blank for Switch, Checkbox, Radio button, Toggle button,
+  selectable cells, and disabled controls. The system announces those binary states
+  itself, so writing anything — including `none` — risks a double announcement. Every
+  other empty cell gets `none`.
 - Use `[brackets]` for content that changes at runtime.
 - Keep multi-line notes on a single line using ` • ` as separator.
 
-### 5. Quality Check
+#### Row Order — Priority, Not Position
+
+Screen reader users move through a screen strictly sequentially. Anything placed
+after a decision point may never be heard. So visual position does not drive
+announcement order:
+
+1. **Navigation chrome first** — toolbars, app bars, and bottom action bars (NYT's
+   "charm bracelet") come first regardless of where they sit on screen. A bottom bar
+   at y=787 is still announced before the headline at y=43.
+2. **Terms, legal, and consent copy next** — always before the CTA it governs. A
+   sighted user catches terms below a Subscribe button in peripheral vision before
+   deciding; a screen reader user will activate the button as soon as they hear it
+   and never reach the terms.
+3. **Everything else** — top-to-bottom, left-to-right.
+
+When priority order differs from visual order, say so in the Notes column. Android
+needs `traversalIndex` plus `isTraversalGroup` on a shared parent; iOS needs
+`accessibilitySortPriority`. Neither happens by default.
+
+### 5. Hybrid Screens — Fill In the Layer Column
+
+Many screens are not all-native. A story page in a WebView with a native paywall over
+it is one screen to the reader but two accessibility trees to the system: the WebView
+bridges its DOM tree into virtual nodes, and the screen reader walks the merged result.
+Semantics on each side are authored with different APIs and usually owned by different
+teams, so mark every row `Native` or `Web`.
+
+| | Native | Web |
+|---|---|---|
+| Label | `contentDescription` / `accessibilityLabel` | `alt`, `aria-label`, text content |
+| State | `stateDescription` | `aria-expanded`, `aria-checked` |
+| Hide | `clearAndSetSemantics` / `accessibilityHidden` | `aria-hidden="true"`, `display:none` |
+| Order | `traversalIndex` / `accessibilitySortPriority` | DOM order |
+
+Three constraints to spell out in the handoff:
+
+- **Native modifiers do not reach inside a WebView, and web attributes do not reach
+  out.** Alt text for an image in the story page is an `alt` attribute owned by the
+  CMS or article-rendering team — not something the app team can add.
+- **Hiding occluded web content has to happen in the web layer.** A native overlay does
+  not clear the WebView's accessibility tree, so a screen reader can reach content
+  sitting behind a paywall. The blunt native fix (`importantForAccessibility =
+  NO_HIDE_DESCENDANTS` on the WebView) hides *all* web content including the visible
+  preview, so it is usually wrong. Cleanest is not sending paywalled markup at all.
+- **Ordering across the boundary is coarse.** You can order native elements relative to
+  each other and to the WebView as a whole, but you cannot interleave a native element
+  between two web nodes. If terms live in the web layer while the CTA is native, they
+  cannot be reordered across that seam — the terms have to move into the native
+  component.
+
+Also note that web headings carry `h1`–`h6` levels and are announced as "heading 1",
+while native headings have no level.
+
+### 6. Quality Check
 
 After generating, verify:
 - [ ] Every tappable element is marked as a button or link
@@ -76,8 +160,12 @@ After generating, verify:
 - [ ] External links warn the user they'll leave the app
 - [ ] Toggles/accordions communicate their state (expanded/collapsed, on/off)
 - [ ] Decorative images are excluded (not in the table)
+- [ ] Navigation chrome is first; terms precede any CTA they govern
+- [ ] Content occluded by an overlay or paywall is `Hidden: Yes`, with its real text kept
+- [ ] Every row has a **Layer**, and anything owned by the web layer is flagged as such
+      in the Notes so it routes to the right team
 - [ ] The **Example** column reads naturally — read it aloud to check
-- [ ] No blank cells — use `none` where not applicable
+- [ ] No blank cells — use `none`, except Android **State** for auto-announced conditions
 
 ## Key Concept: The Example Column
 

@@ -11,21 +11,22 @@ For example, a subscribe button might read:
 
 That breaks down as: Description ("Subscribe now") → Element Type ("button") → Action hint ("Double tap to activate. Opens external browser.").
 
-## The 11 Columns
+## The 12 Columns
 
 | # | Column | What to Write | Examples |
 |---|--------|--------------|----------|
 | 1 | **Order** | Number each element in swipe order (top-to-bottom, left-to-right). **Only number what TalkBack actually focuses on:** standalone elements and parents. Leave blank for `Merged into parent` rows and `Hidden: Yes` rows — those aren't read as their own focus stops. | `1`, `2`, *(blank)* |
 | 2 | **Component** | Your design system name for the element. Helps engineers locate it in code. | `Featured card`, `Save button`, `Close button` |
-| 3 | **Element Type** | What type of thing it is. One of: `Button`, `Toggle button`, `Switch`, `Checkbox`, `Radio button`, `Image`, `Heading`, `Tab`, `Link`, `None`. Use `None` for decorative or live-region-only elements. | `Button`, `Heading`, `Image`, `None` |
-| 4 | **Description** | The spoken label. Write in sentence case. Use `[brackets]` for dynamic content. Write `Decorative` for elements that should be hidden. | `Close`, `Free trial offer timeline`, `[User's first name]`, `Decorative` |
-| 5 | **State** | Custom state like `Playing, 2:15 of 4:30`. **Leave blank for Switch / Checkbox / Radio / selectable cells / disabled controls** — the system auto-announces the binary state and adding it causes double announcements. | `none`, `Playing, 2:15 of 4:30`, `3 of 5`, `75 percent` |
-| 6 | **Grouping** | `Standalone` for solo elements. `Parent of N` for containers that merge children into one announcement. `Merged into parent` for children that should not be swiped to individually. | `Standalone`, `Parent of 3`, `Merged into parent` |
-| 7 | **Hidden** | `Yes` for decorative icons, redundant labels, background images. Engineers apply `clearAndSetSemantics`. | `No`, `Yes` |
-| 8 | **Action** | Every action a user can perform on this element, in priority order. The first item becomes the default tap action; the rest go to TalkBack's swipe up/down menu. Use `None` for elements with no actions. | `Subscribe`, `Open article, Save for later, Share`, `None` |
-| 9 | **Announce on change** | `Polite` = waits for the user to pause (toasts, confirmations). `Assertive` = interrupts immediately (errors, breaking news). `None` = no announcement. | `None`, `Polite`, `Assertive` |
-| 10 | **TalkBack example** | The full sentence TalkBack speaks aloud, in order: description, state, element type, action hint. Read it aloud to sanity-check — if it sounds awkward, rewrite the description. | `Subscribe now, button. Double tap to activate.` |
-| 11 | **Notes** | Guidance for engineers — design intent that no other column captures (focus moves, dismissal behavior, what re-enables a control). Use `•` bullet points. Write just `•` if none needed. | `• On dismiss, return focus to the trigger` |
+| 3 | **Layer** | `Native` or `Web`. Which layer the element lives in — this decides the API and the owning team. On an all-native screen every row is `Native`. | `Native`, `Web` |
+| 4 | **Element Type** | What type of thing it is. One of: `Button`, `Toggle button`, `Switch`, `Checkbox`, `Radio button`, `Image`, `Heading`, `Tab`, `Link`, `None`. Use `None` for decorative or live-region-only elements. | `Button`, `Heading`, `Image`, `None` |
+| 5 | **Description** | The spoken label. Write in sentence case. Use `[brackets]` for dynamic content. Write `Decorative` for elements that should be hidden. | `Close`, `Free trial offer timeline`, `[User's first name]`, `Decorative` |
+| 6 | **State** | Custom state like `Playing, 2:15 of 4:30`. **Leave blank for Switch / Checkbox / Radio / selectable cells / disabled controls** — the system auto-announces the binary state and adding it causes double announcements. | `none`, `Playing, 2:15 of 4:30`, `3 of 5`, `75 percent` |
+| 7 | **Grouping** | `Standalone` for solo elements. `Parent of N` for containers that merge children into one announcement. `Merged into parent` for children that should not be swiped to individually. | `Standalone`, `Parent of 3`, `Merged into parent` |
+| 8 | **Hidden** | `Yes` for decorative icons, redundant labels, background images. Engineers apply `clearAndSetSemantics`. | `No`, `Yes` |
+| 9 | **Action** | Every action a user can perform on this element, in priority order. The first item becomes the default tap action; the rest go to TalkBack's swipe up/down menu. Use `None` for elements with no actions. | `Subscribe`, `Open article, Save for later, Share`, `None` |
+| 10 | **Announce on change** | `Polite` = waits for the user to pause (toasts, confirmations). `Assertive` = interrupts immediately (errors, breaking news). `None` = no announcement. | `None`, `Polite`, `Assertive` |
+| 11 | **TalkBack example** | The full sentence TalkBack speaks aloud, in order: description, state, element type, action hint. Read it aloud to sanity-check — if it sounds awkward, rewrite the description. | `Subscribe now, button. Double tap to activate.` |
+| 12 | **Notes** | Guidance for engineers — design intent that no other column captures (focus moves, dismissal behavior, what re-enables a control). Use `•` bullet points. Write just `•` if none needed. | `• On dismiss, return focus to the trigger` |
 
 ### Order — Only Number What's Focusable
 
@@ -36,7 +37,7 @@ Number rows in the sequence a TalkBack user swipes through them. Give a number o
 | Type | Use When... | What TalkBack Announces |
 |------|------------|----------------------|
 | `None` | Plain text — paragraphs, labels, descriptions. Also for decorative elements and live regions where you only want content updates spoken. | Nothing extra |
-| `Heading` | Section title. Lets users jump between sections with the heading reading control. | Says "heading" |
+| `Heading` | Section title. Lets users jump between sections with the heading reading control. | Says "heading" — plus a level ("heading 1") when the element is in a WebView, since HTML headings carry `h1`–`h6`. Native Compose `heading()` has no levels. |
 | `Button` | Tappable element that performs an action | Says "button" and "Double tap to activate" |
 | `Toggle button` | Button that flips between two states (e.g. Follow / Following) | Says "button" + on/off state |
 | `Switch` | iOS-style switch that turns something on or off | Says "switch" + on/off state |
@@ -98,8 +99,27 @@ Mark `Yes` for:
 - Decorative icons that have a labeled sibling (a heart icon next to "Save" button text)
 - Redundant labels
 - Background images and dividers
+- **Occluded content** — anything sitting underneath an overlay, gradient, or paywall
 
 Engineers will apply `clearAndSetSemantics { }` to clear the element and all of its semantic info.
+
+### Hidden for Two Different Reasons
+
+`Hidden: Yes` covers two cases that need different Descriptions:
+
+| Reason | Description column | Why |
+|--------|-------------------|-----|
+| Carries no meaning (divider, background shape, redundant icon) | `Decorative` | There is no text worth preserving |
+| Meaningful but occluded (behind a paywall, overlay, or gradient) | **the real text** | It becomes visible in other states — a subscriber with no paywall needs `Hidden: No` and this exact text |
+
+Writing `Decorative` for occluded content destroys information the engineer needs the
+moment they handle the unpaywalled variant. Keep the text; the `Hidden` column already
+says not to announce it.
+
+Occluded content does not hide itself. It stays in the accessibility tree unless
+engineering clears it, which is how paywalled text leaks to TalkBack users. Flag it
+explicitly rather than assuming the overlay handles it. When the occluded element lives
+in a WebView, `clearAndSetSemantics` cannot reach it — see the Layer column.
 
 ### Action — One List, Priority Order
 
@@ -169,7 +189,7 @@ If you're creating tables for both platforms, here are the key differences. Use 
 | What to call an element | `accessibilityLabel` — same text fills both specs | `contentDescription` — same text, but **never** include element type or state | Same decision |
 | Current state | `accessibilityValue` — measured values only; binary states (Selected, Disabled) live in traits | `stateDescription` — handles measured values **and** binary conditions in one field | Differs |
 | Element type | `accessibilityTraits` — one list mixing type tags (`.button`) and condition tags (`.selected`) | Split: `Role` ("Button") + `stateDescription` ("Selected") | Differs |
-| Heading | `accessibilityHeading` trait — supports H1–H6 levels | `heading()` semantic — no levels, just yes/no | Differs |
+| Heading | `accessibilityHeading` trait — supports H1–H6 levels | `heading()` semantic — no levels, just yes/no. Web content inside a WebView *does* carry `h1`–`h6` and TalkBack announces the level. | Differs |
 | Actions | `accessibilityCustomActions` — single list, user cycles via rotor; no primary/extras distinction | `onClickLabel` (first action, bound to tap) + `customActions` (rest, in swipe menu). Engineer splits the list. | Differs |
 | Hint | `accessibilityHint` — spoken after a pause; users can disable globally | **No equivalent** — fold the hint into the description or actions, or drop it | iOS only |
 | Grouping | `accessibilityElement(children:)` — three modes: `.combine`, `.contain` (drill-in), `.ignore` | `mergeDescendants = true` — single boolean. No native equivalent to iOS's drill-in container. | Differs |
