@@ -1,4 +1,4 @@
----
+ ---
 name: screen-reader-handoff
 description: >-
   Generate screen reader accessibility handoff tables for iOS VoiceOver and
@@ -66,6 +66,27 @@ Yes` — content behind a paywall stays in the accessibility tree by default, so
 screen reader user can read paywalled text unless engineering explicitly clears it.
 Do the arithmetic rather than eyeballing it; child coordinates are relative to the
 parent frame, so add the offsets before comparing against the overlay's bounds.
+
+**Leave out OS chrome entirely — no row, not even `Hidden: Yes`.** The status bar
+clock, battery, cellular and wifi indicators, the home indicator, the notch and the
+Dynamic Island belong to the platform, not the app. iOS and Android expose them
+through their own accessibility layers, so a row for them would tell engineers to
+implement something they do not own. This is different from a decorative divider,
+which the app *does* own and which therefore earns a `Hidden: Yes` row.
+
+Mockups usually include this chrome from a UI kit, so it will be in the metadata.
+Two ways to spot it:
+
+- **By name** — `Status bar`, `StatusBar`, `status_bar/dark`, `Home indicator`,
+  `Notch`, `Dynamic Island`, `Battery`, `Wifi`, `Signal`, `Carrier`.
+- **By shape, when the layer is named something useless like `Group 12`** — a
+  full-width strip flush with the top of the frame, under ~60px tall, containing
+  clock-like text (`9:41`). The clock is the tell: a nav bar sits in the same place
+  and looks similar, but has a title and back button instead of a time.
+
+Prune the whole subtree, not just the parent. If you only drop the `Status bar`
+frame and keep walking its children, `9:41`, the battery and the wifi icon each
+arrive as their own row.
 
 **If no Figma URL**, ask the user to describe the screen or provide a screenshot.
 
@@ -160,12 +181,39 @@ After generating, verify:
 - [ ] External links warn the user they'll leave the app
 - [ ] Toggles/accordions communicate their state (expanded/collapsed, on/off)
 - [ ] Decorative images are excluded (not in the table)
+- [ ] OS chrome (status bar, home indicator, notch) has no row at all — and none of
+      its children leaked in as rows either
 - [ ] Navigation chrome is first; terms precede any CTA they govern
 - [ ] Content occluded by an overlay or paywall is `Hidden: Yes`, with its real text kept
 - [ ] Every row has a **Layer**, and anything owned by the web layer is flagged as such
       in the Notes so it routes to the right team
 - [ ] The **Example** column reads naturally — read it aloud to check
 - [ ] No blank cells — use `none`, except Android **State** for auto-announced conditions
+
+### 7. Deliver — TSV, Rendered Table, or Annotated Design
+
+Default to a **TSV code block** the user can paste into Figma, Sheets, or Notion.
+
+If the user asks for the spec *in* the file — "draw it next to the frame", "put it on
+the canvas", "add it to the Figma file" — render it as a native table instead, using
+`use_figma`. See [figma-canvas.md](figma-canvas.md) for a ready-to-run script and the
+auto-layout constraints that otherwise cause hard-to-debug failures.
+
+When you render onto the canvas, also **annotate the frame itself**: a numbered badge
+and dashed outline on top of every element that has a row, using that row's **Order**
+number. A table next to the frame still leaves the reader to match rows to shapes by
+eye — the numbers close that gap, and they make priority-over-position order (nav
+chrome first, terms before the CTA) visible on the canvas instead of only asserted in
+the Notes column. See [figma-annotations.md](figma-annotations.md) for the script.
+Skip a badge for any row with a blank Order (merged-into-parent or Hidden rows).
+
+Rendering has a real advantage over pasted TSV: the rows sit beside the screen they
+document, so a reviewer can check an announcement against the design without
+switching tools, and engineers see the spec in the same file they are already
+building from.
+
+Offer the canvas version — table plus annotations — alongside the TSV when the user
+has not said which they want.
 
 ## Key Concept: The Example Column
 
@@ -194,3 +242,5 @@ Read each Example aloud. If it sounds awkward or confusing, revise the Label, Hi
 - **iOS VoiceOver**: [voiceover-schema.md](voiceover-schema.md)
 - **Android TalkBack**: [talkback-schema.md](talkback-schema.md)
 - **Full examples with best-practice annotations**: [examples.md](examples.md)
+- **Rendering the table onto the Figma canvas**: [figma-canvas.md](figma-canvas.md)
+- **Annotating the design with numbered markers**: [figma-annotations.md](figma-annotations.md)

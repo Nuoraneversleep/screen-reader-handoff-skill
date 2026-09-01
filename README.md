@@ -1,6 +1,8 @@
 # Screen Reader Handoff Skill
 
-A [Cursor](https://cursor.com) Agent Skill that helps designers generate screen reader accessibility handoff tables for iOS VoiceOver and Android TalkBack.
+An agent skill for [Claude Code](https://claude.com/claude-code) and
+[Cursor](https://cursor.com) that helps designers generate screen reader
+accessibility handoff tables for iOS VoiceOver and Android TalkBack.
 
 No screen reader expertise required — the skill guides you through creating structured specs that tell engineers exactly what a screen reader user should hear on every screen.
 
@@ -9,6 +11,15 @@ No screen reader expertise required — the skill guides you through creating st
 - Generates **tab-separated (TSV) tables** you can paste directly into Figma or Google Sheets
 - Supports **iOS VoiceOver** and **Android TalkBack** with platform-specific schemas
 - Reads designs from **Figma URLs** (via MCP) or manual screen descriptions
+- **Renders the spec onto the Figma canvas**, beside the screen it documents, so
+  reviewers can check an announcement against the design without switching tools
+- **Annotates the design itself** with numbered badges and dashed outlines tied to
+  each row's Order number, so a reviewer can match a row to its element at a glance
+- Orders rows by **announcement priority** rather than visual position — navigation
+  chrome first, terms before the CTA they govern
+- Handles **hybrid screens**, marking each row `Native` or `Web` so rows route to the
+  team that owns the semantics
+- Excludes **OS chrome** (status bar, home indicator, notch) — the platform owns those
 - Includes annotated **best-practice examples** explaining common patterns like buttons, accordions, carousels, external links, and more
 
 ## Example Output
@@ -23,20 +34,39 @@ Each row in the table is one element a screen reader user can focus on:
 
 ## Installation
 
-### Option A: Personal skill (available across all your projects)
+### Claude Code
 
 ```bash
-git clone https://github.com/Nuoraneversleep/screen-reader-handoff-skill.git ~/.cursor/skills/screen-reader-handoff
+# Personal — available in every project
+git clone https://github.com/Nuoraneversleep/screen-reader-handoff-skill.git \
+  ~/.claude/skills/screen-reader-handoff
+
+# Or per-project, shared with your team via the repo
+git clone https://github.com/Nuoraneversleep/screen-reader-handoff-skill.git \
+  .claude/skills/screen-reader-handoff
 ```
 
-### Option B: Project skill (shared with your team via the repo)
+### Cursor
 
 ```bash
-# From your project root
-git clone https://github.com/Nuoraneversleep/screen-reader-handoff-skill.git .cursor/skills/screen-reader-handoff
+git clone https://github.com/Nuoraneversleep/screen-reader-handoff-skill.git \
+  ~/.cursor/skills/screen-reader-handoff
 ```
 
-Or copy the files manually into either location. The skill directory must contain `SKILL.md` at its root.
+Either way the skill directory must contain `SKILL.md` at its root.
+
+### Reading and writing Figma
+
+To read designs from a Figma URL — and to render specs onto the canvas — you also
+need the Figma MCP server. In Claude Code:
+
+```bash
+claude plugin install figma@claude-plugins-official
+```
+
+Then enable the MCP server in the Figma desktop app under
+**Preferences → Enable local MCP server**. Without it, the skill still works from a
+screenshot or a written description of the screen.
 
 ## Files
 
@@ -46,16 +76,25 @@ Or copy the files manually into either location. The skill directory must contai
 | `voiceover-schema.md` | iOS VoiceOver 12-column table schema and column-by-column guidance |
 | `talkback-schema.md` | Android TalkBack 12-column table schema and platform differences |
 | `examples.md` | 5 fully annotated example tables with best-practice explanations |
+| `figma-canvas.md` | Script for rendering a finished table onto the Figma canvas, plus the auto-layout constraints that trip it up |
+| `figma-annotations.md` | Script for marking up the design itself with numbered badges tied to each row's Order number |
 
 ## Usage
 
-Once installed, Cursor will automatically activate this skill when you ask for accessibility handoff work. Try prompts like:
+The skill activates automatically when you ask for accessibility handoff work. Try:
 
 - *"Generate a VoiceOver handoff table for this screen"* (with a Figma URL or description)
 - *"Create accessibility specs for both iOS and Android"*
 - *"What should the screen reader read for this paywall design?"*
+- *"Draw the TalkBack spec on the canvas next to the frame"* (needs the Figma MCP server)
+- *"Add numbered markers on the design so I can see which row is which element"*
 
-The skill produces a TSV code block you can copy and paste directly into Figma or any spreadsheet tool.
+You get a TSV code block to paste into Figma or a spreadsheet — or, if you ask for it
+on the canvas, a native Figma table placed beside the frame, with matching numbered
+badges drawn directly on top of the design.
+
+Paste a **link to the selection** rather than a plain file URL: right-click the frame
+in Figma and choose **Copy link to selection**, so the URL carries a `node-id`.
 
 ## Best Practices Covered
 
@@ -73,6 +112,7 @@ The examples file explains key accessibility patterns with rationale:
 - **Terms and consent copy** precede any CTA they govern, regardless of visual position
 - **Occluded content** (behind a paywall or overlay) is hidden but keeps its real text
 - **Hybrid screens** mark each row `Native` or `Web` — the layer decides the API and the owning team
+- **Annotated Order numbers** on the design surface priority-over-position ordering as a visible fact — a terms block's badge can sit below a CTA's while carrying a lower number
 
 ## Contributing
 
