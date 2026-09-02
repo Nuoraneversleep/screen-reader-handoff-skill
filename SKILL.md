@@ -24,12 +24,23 @@ A **tab-separated table** (TSV) where each row is one element a screen reader us
 
 ## Workflow
 
-### 1. Determine Platform
+### 1. Determine Platform and Delivery Format
 
-Ask if not obvious:
-- **iOS** → VoiceOver table (see [voiceover-schema.md](voiceover-schema.md))
-- **Android** → TalkBack table (see [talkback-schema.md](talkback-schema.md))
-- **Both** → Generate one table per platform
+Ask both up front, in the same round of questions, before reading the design:
+
+- **Platform** (if not obvious):
+  - **iOS** → VoiceOver table (see [voiceover-schema.md](voiceover-schema.md))
+  - **Android** → TalkBack table (see [talkback-schema.md](talkback-schema.md))
+  - **Both** → Generate one table per platform
+- **Delivery format** (always ask, even if the platform is obvious):
+  - **Spec file (TSV)** → a tab-separated code block the user pastes into Figma, Sheets, or Notion
+  - **Rendered in Figma** → a native table built with `use_figma` plus numbered badges annotating the frame itself (see Step 7)
+  - **Both** → produce the TSV and also render it on the canvas
+
+Knowing the delivery format up front matters because it changes what you need from the
+design: rendering onto the canvas requires the frame's own coordinate space for
+annotation placement (Step 7), not just the visual judgment calls TSV-only delivery
+needs. Skip re-asking this in Step 7 — you already have the answer.
 
 ### 2. Read the Design
 
@@ -192,28 +203,28 @@ After generating, verify:
 
 ### 7. Deliver — TSV, Rendered Table, or Annotated Design
 
-Default to a **TSV code block** the user can paste into Figma, Sheets, or Notion.
+Use the delivery format chosen in Step 1 — don't re-ask here.
 
-If the user asks for the spec *in* the file — "draw it next to the frame", "put it on
-the canvas", "add it to the Figma file" — render it as a native table instead, using
-`use_figma`. See [figma-canvas.md](figma-canvas.md) for a ready-to-run script and the
-auto-layout constraints that otherwise cause hard-to-debug failures.
+**Spec file (TSV)**: output a TSV code block the user can paste into Figma, Sheets, or
+Notion.
 
-When you render onto the canvas, also **annotate the frame itself**: a numbered badge
-and dashed outline on top of every element that has a row, using that row's **Order**
-number. A table next to the frame still leaves the reader to match rows to shapes by
-eye — the numbers close that gap, and they make priority-over-position order (nav
-chrome first, terms before the CTA) visible on the canvas instead of only asserted in
-the Notes column. See [figma-annotations.md](figma-annotations.md) for the script.
-Skip a badge for any row with a blank Order (merged-into-parent or Hidden rows).
+**Rendered in Figma**: render it as a native table using `use_figma`. See
+[figma-canvas.md](figma-canvas.md) for a ready-to-run script and the auto-layout
+constraints that otherwise cause hard-to-debug failures. Also **annotate the frame
+itself**: a numbered badge and dashed outline on top of every element that has a row,
+using that row's **Order** number. A table next to the frame still leaves the reader to
+match rows to shapes by eye — the numbers close that gap, and they make
+priority-over-position order (nav chrome first, terms before the CTA) visible on the
+canvas instead of only asserted in the Notes column. See
+[figma-annotations.md](figma-annotations.md) for the script. Skip a badge for any row
+with a blank Order (merged-into-parent or Hidden rows).
 
 Rendering has a real advantage over pasted TSV: the rows sit beside the screen they
 document, so a reviewer can check an announcement against the design without
 switching tools, and engineers see the spec in the same file they are already
 building from.
 
-Offer the canvas version — table plus annotations — alongside the TSV when the user
-has not said which they want.
+**Both**: do both of the above.
 
 ## Key Concept: The Example Column
 
