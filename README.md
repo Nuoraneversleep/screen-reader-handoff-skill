@@ -2,14 +2,15 @@
 
 An agent skill for [Claude Code](https://claude.com/claude-code) and
 [Cursor](https://cursor.com) that helps designers generate screen reader
-accessibility handoff tables for iOS VoiceOver and Android TalkBack.
+accessibility handoff tables for iOS VoiceOver, Android TalkBack, and the Web
+(ARIA).
 
 No screen reader expertise required — the skill guides you through creating structured specs that tell engineers exactly what a screen reader user should hear on every screen.
 
 ## What It Does
 
 - Generates **tab-separated (TSV) tables** you can paste directly into Figma or Google Sheets
-- Supports **iOS VoiceOver** and **Android TalkBack** with platform-specific schemas
+- Supports **iOS VoiceOver**, **Android TalkBack**, and **Web (ARIA)** with platform-specific schemas
 - Reads designs from **Figma URLs** (via MCP) or manual screen descriptions
 - **Renders the spec onto the Figma canvas**, beside the screen it documents, so
   reviewers can check an announcement against the design without switching tools
@@ -17,8 +18,9 @@ No screen reader expertise required — the skill guides you through creating st
   each row's Order number, so a reviewer can match a row to its element at a glance
 - Orders rows by **announcement priority** rather than visual position — navigation
   chrome first, terms before the CTA they govern
-- Handles **hybrid screens**, marking each row `Native` or `Web` so rows route to the
-  team that owns the semantics
+- Handles **hybrid screens** (native shell + WebView) as **one combined table** — a
+  single continuous Order sequence with each row marked `Native` or `Web`, instead of
+  two disconnected tables that hide whether the seam actually reads in order
 - Excludes **OS chrome** (status bar, home indicator, notch) — the platform owns those
 - Includes annotated **best-practice examples** explaining common patterns like buttons, accordions, carousels, external links, and more
 
@@ -75,6 +77,7 @@ screenshot or a written description of the screen.
 | `SKILL.md` | Main skill instructions — workflow, quality checklist, common UI patterns |
 | `voiceover-schema.md` | iOS VoiceOver 12-column table schema and column-by-column guidance |
 | `talkback-schema.md` | Android TalkBack 12-column table schema and platform differences |
+| `web-schema.md` | Web (ARIA) 12-column table schema — Role, DOM order vs. visual order, live regions, and how it differs from native |
 | `examples.md` | 5 fully annotated example tables with best-practice explanations |
 | `figma-canvas.md` | Script for rendering a finished table onto the Figma canvas, plus the auto-layout constraints that trip it up |
 | `figma-annotations.md` | Script for marking up the design itself with numbered badges tied to each row's Order number |
@@ -85,6 +88,8 @@ The skill activates automatically when you ask for accessibility handoff work. T
 
 - *"Generate a VoiceOver handoff table for this screen"* (with a Figma URL or description)
 - *"Create accessibility specs for both iOS and Android"*
+- *"Generate a Web handoff table for this page"*
+- *"This screen has a native paywall over a WebView — document it"*
 - *"What should the screen reader read for this paywall design?"*
 - *"Draw the TalkBack spec on the canvas next to the frame"* (needs the Figma MCP server)
 - *"Add numbered markers on the design so I can see which row is which element"*
@@ -111,7 +116,9 @@ The examples file explains key accessibility patterns with rationale:
 - **Navigation chrome** is announced first, even when it sits at the bottom of the screen
 - **Terms and consent copy** precede any CTA they govern, regardless of visual position
 - **Occluded content** (behind a paywall or overlay) is hidden but keeps its real text
-- **Hybrid screens** mark each row `Native` or `Web` — the layer decides the API and the owning team
+- **Hybrid screens** get one combined table with a continuous Order sequence, each row marked `Native` or `Web` — the layer decides the API and the owning team
+- **Web reading order** is DOM order, which can silently diverge from visual order through ordinary CSS (`flex`/`grid` order, `position`) — the biggest web-specific risk with no native equivalent
+- **Custom ARIA widgets** (a styled `div role="switch"`) never auto-announce state — only genuine native HTML controls do
 - **Annotated Order numbers** on the design surface priority-over-position ordering as a visible fact — a terms block's badge can sit below a CTA's while carrying a lower number
 
 ## Contributing

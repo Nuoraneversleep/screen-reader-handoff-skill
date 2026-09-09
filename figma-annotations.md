@@ -135,3 +135,7 @@ figma.viewport.scrollAndZoomIntoView([overlay, target]);
 - **Keep numbers in sync with the rendered table.** If you regenerate the table after
   edits, regenerate the annotations from the same `ANNOTATIONS` list so the two never
   drift apart.
+- **Verify with `node.screenshot()`, not the `get_screenshot` tool.** Immediately after
+  writing the overlay, `get_screenshot` on `target` can return a stale cached render —
+  same bytes as before the badges existed. `await target.screenshot({ contentsOnly:
+  false })` inside `use_figma` reads the live canvas and is the reliable check.

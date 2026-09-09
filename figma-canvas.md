@@ -35,7 +35,7 @@ platform's column order. Set `TITLE`, `SUBTITLE`, and `COLS` per platform.
 
 ```js
 const COLS = ['Order','Component','Layer','Trait','Label','Value','Grouping','Hidden','Actions','Hint','Example','Notes on Documentation'];
-const WIDTHS = [50, 140, 60, 100, 190, 110, 130, 60, 150, 150, 280, 240];
+const WIDTHS = [60, 140, 60, 100, 190, 110, 130, 60, 150, 150, 280, 240];
 const TITLE = 'iOS VoiceOver — <screen name>';
 const SUBTITLE = 'Label → Value → Trait → Hint · review before handoff';
 const ROWS = [ /* ['1','Close button','Native','button', ...], ... */ ];
@@ -153,9 +153,15 @@ figma.viewport.scrollAndZoomIntoView([table]);
   overlap, or wrap both in a vertical auto-layout frame.
 - **TalkBack columns:** `['Order','Component','Layer','Element Type','Description','State','Grouping','Hidden','Action','Announce on change','TalkBack example','Notes']`,
   and a subtitle of `Description → State → Element Type → Action hint`.
-- **Empty Android State cells stay genuinely empty** — for Switch, Checkbox, Radio,
-  Toggle, selectable cells and disabled controls, pass `''`, not `'none'`. Writing
-  anything there risks a double announcement.
+- **Web columns:** `['Order','Component','Layer','Role','Accessible Name','State','Grouping','Hidden','Actions','Announce on change','Web example','Notes']`,
+  and a subtitle of `Accessible Name → Role → State`. Same shape as TalkBack's — both
+  drop Hint in favor of Announce on change.
+- **Empty State cells stay genuinely empty on Android and Web** — for Switch,
+  Checkbox, Radio, Toggle, selectable cells, disabled controls (Android) and native
+  `<input type="checkbox">`/`<input type="radio">`/`<select>` (Web), pass `''`, not
+  `'none'`. Writing anything there risks a double announcement. Custom ARIA widgets
+  (a `div role="switch"`) are the one Web exception — their state is never automatic,
+  so write it explicitly.
 - **Keep cells on one line.** Join multi-part notes with ` • `; a literal newline
   inside a cell breaks the row rhythm.
 - **Long tables are slow to render.** Past ~40 rows, mention it will take a moment
@@ -163,3 +169,8 @@ figma.viewport.scrollAndZoomIntoView([table]);
 - **Pair with the design itself.** A table alone still leaves the reader to match rows
   to shapes by eye. See [figma-annotations.md](figma-annotations.md) for a script that
   draws the same Order numbers as badges directly on the frame.
+- **Verify with `node.screenshot()`, not the `get_screenshot` tool.** Right after
+  writing new nodes, calling `get_screenshot` on the frame you just edited can return a
+  stale cached render — same bytes as before your edit, with nothing new visible.
+  `await target.screenshot({ contentsOnly: false })` inside `use_figma` reads the live
+  canvas state and is the reliable way to confirm a table or overlay actually landed.

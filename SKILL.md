@@ -28,10 +28,26 @@ A **tab-separated table** (TSV) where each row is one element a screen reader us
 
 Ask both up front, in the same round of questions, before reading the design:
 
-- **Platform** (if not obvious):
+- **Platform** — ask this explicitly; don't try to infer it from the design. A hybrid
+  screen usually looks completely seamless in the mock, with nothing visually marking
+  a region as a WebView, so guessing from the frame alone is unreliable:
   - **iOS** → VoiceOver table (see [voiceover-schema.md](voiceover-schema.md))
   - **Android** → TalkBack table (see [talkback-schema.md](talkback-schema.md))
-  - **Both** → Generate one table per platform
+  - **Web** → Web/ARIA table (see [web-schema.md](web-schema.md))
+  - **Hybrid** (native app shell containing a WebView) → generate **one** combined
+    table, not one per layer — see Step 5. Picking this ask three more things before
+    reading the design, since they change what you need from it:
+    1. *"Which region is the WebView, and which is native?"* — get the exact
+       boundary; it's rarely a clean top/bottom split (a native paywall can float
+       over web content with no visible seam).
+    2. *"Do you have the actual web markup, or just this visual?"* — Figma shows
+       layout, not DOM structure. Without markup, Role/heading-level/DOM-order calls
+       for the Web rows are informed guesses from the visual — say so in Notes
+       rather than stating them as fact.
+    3. *"Is there a known reading-order requirement that spans the boundary?"* —
+       e.g. terms that must legally precede a CTA on the other side of the seam.
+       Ordering across the native/web boundary is coarse to fix after the fact (see
+       Step 5), so it's worth knowing before assigning Order numbers, not after.
 - **Delivery format** (always ask, even if the platform is obvious):
   - **Spec file (TSV)** → a tab-separated code block the user pastes into Figma, Sheets, or Notion
   - **Rendered in Figma** → a native table built with `use_figma` plus numbered badges annotating the frame itself (see Step 7)
@@ -99,6 +115,25 @@ Prune the whole subtree, not just the parent. If you only drop the `Status bar`
 frame and keep walking its children, `9:41`, the battery and the wifi icon each
 arrive as their own row.
 
+**On the web, the same exclusion applies to existing shared site chrome** — a global
+masthead, nav, search, and footer that are already implemented and maintained by a
+separate team, sitting in the mock only for context around whatever this specific
+component or page redesign actually is. Mockups for a single component or section
+often paste in a flattened screenshot of the real site header for orientation (look
+for layer names like a URL or `Screenshot ...`) rather than a real breakdown of nav
+links — that flattening is itself a signal it's reference chrome, not new work. Same
+rule as OS chrome: no row at all, not even `Hidden: Yes`.
+
+**Watch for off-canvas duplicates and overflowing nested content.** Figma files
+assembled from shared component libraries sometimes carry a leftover copy of a module
+positioned outside the frame's visible bounds (negative `y`, or far past the frame's
+edge) — a stray duplicate, not part of the composition. Separately, a nested
+instance's children can report `y` positions that exceed its own parent's declared
+height, meaning that content doesn't actually render where the layer tree implies.
+Neither is an occlusion case (Step above) — do the same "compare positions, don't
+eyeball it" arithmetic, and when a node's numbers don't add up, ask rather than
+guessing whether it's live content.
+
 **If no Figma URL**, ask the user to describe the screen or provide a screenshot.
 
 ### 3. Think Like a Screen Reader User
@@ -120,8 +155,10 @@ For every visible element on screen, ask:
 - One header row, one row per element a screen reader user can focus on.
 - Order rows by **announcement priority**, not visual position — see below.
 - Set **Layer** on every row to `Native` or `Web`. On an all-native screen every row is
-  `Native`; on a hybrid screen this decides which API and which team owns the row, so
-  read the hybrid-screens step before filling it in.
+  `Native`; on an all-web screen every row is `Web` and you're using
+  [web-schema.md](web-schema.md)'s columns instead of the native ones; on a hybrid
+  screen this decides which API and which team owns the row, so read the
+  hybrid-screens step before filling it in.
 - Use `none` (lowercase) for empty cells, with one exception: leave the Android
   **State** cell truly blank for Switch, Checkbox, Radio button, Toggle button,
   selectable cells, and disabled controls. The system announces those binary states
@@ -151,11 +188,12 @@ needs `traversalIndex` plus `isTraversalGroup` on a shared parent; iOS needs
 
 ### 5. Hybrid Screens — Fill In the Layer Column
 
-Many screens are not all-native. A story page in a WebView with a native paywall over
-it is one screen to the reader but two accessibility trees to the system: the WebView
-bridges its DOM tree into virtual nodes, and the screen reader walks the merged result.
-Semantics on each side are authored with different APIs and usually owned by different
-teams, so mark every row `Native` or `Web`.
+This is the step Step 1 flagged if the user picked **Hybrid**: a story page in a
+WebView with a native paywall over it is one screen to the reader but two
+accessibility trees to the system — the WebView bridges its DOM tree into virtual
+nodes, and the screen reader walks the merged result. Semantics on each side are
+authored with different APIs and usually owned by different teams, so mark every row
+`Native` or `Web`.
 
 | | Native | Web |
 |---|---|---|
@@ -181,7 +219,40 @@ Three constraints to spell out in the handoff:
   component.
 
 Also note that web headings carry `h1`–`h6` levels and are announced as "heading 1",
-while native headings have no level.
+while native headings have no level. [web-schema.md](web-schema.md) covers ARIA
+concepts (Role, DOM order, live regions) in full — use it as the reference for what
+each Web-layer row's Notes should tell the web team, even though the row itself lives
+in the combined table below.
+
+#### Deliver One Combined Table, Not One Per Layer
+
+A hybrid screen is one screen to the user — one continuous swipe sequence, not two
+separate trees. So the handoff artifact should be **one table**, not a native table
+plus a separate web table:
+
+- **Use the native platform's table shape** (VoiceOver or TalkBack columns) as the
+  single artifact, since the native shell is what stitches the two trees into one
+  reading order and is usually the audience that needs to see the seam.
+- **Number every row in one continuous Order sequence** across both layers — this is
+  the entire point. Two separate tables each starting at `1` hide the thing most likely
+  to break: whether the web content lands in the right place in the native reading
+  order.
+- **Tag each row's Layer** (`Native` or `Web`) as already described. For a Web row's
+  **Trait**/**Element Type** column, use the closest native-vocabulary term (`link`,
+  `header`, `button`, `image`, `none`) rather than a raw ARIA role — the table's
+  primary audience is reading it as one consistent list, not switching vocabularies
+  mid-table.
+- **Push ARIA-specific authoring detail into that row's Notes**, and point to
+  [web-schema.md](web-schema.md) for the exact Role/state/DOM-order conventions —
+  e.g. `• Web layer — see web-schema.md. Role: switch, needs aria-checked authored
+  explicitly (custom widget, not a native input).`
+- **If the WebView content is complex enough to need its own detailed spec** — a long
+  article page with many interactive elements, say — produce a *supplementary* Web
+  table using the full [web-schema.md](web-schema.md) columns for that content's own
+  team, and cross-reference it by name from the Notes column of its corresponding row
+  in the combined table. The combined table stays the single source of truth for
+  reading **order** across the seam; the supplementary table is for that layer's own
+  implementation detail.
 
 ### 6. Quality Check
 
@@ -247,11 +318,13 @@ Read each Example aloud. If it sounds awkward or confusing, revise the Label, Hi
 | A carousel or swipeable content | Type: **adjustable/list**. Describe swipe behavior. Include position: "1 of 6" |
 | Text with a hyperlink inside it | Include the full text. Note that there's a link and how to access it. |
 | Price with strikethrough + discounted price | Combine into one label: "$30, discounted to $4 per month" |
+| A story/article card (photo + headline + dek + metadata, one clickable unit) | The photo illustrates the story, so it is **not** decorative — give it a real descriptive label, not `Hidden: Yes`. If the whole card is one link, model it as **Parent of N (combined)**: one Order number on the card itself, every piece (photo, headline, dek, metadata) listed below it as `Merged into parent` with a blank Order. Flag in Notes if the combined name reads as too long — that's a real trade-off, not something to silently fix by hiding the photo. |
 
 ## Platform Schema References
 
 - **iOS VoiceOver**: [voiceover-schema.md](voiceover-schema.md)
 - **Android TalkBack**: [talkback-schema.md](talkback-schema.md)
+- **Web (ARIA)**: [web-schema.md](web-schema.md)
 - **Full examples with best-practice annotations**: [examples.md](examples.md)
 - **Rendering the table onto the Figma canvas**: [figma-canvas.md](figma-canvas.md)
 - **Annotating the design with numbered markers**: [figma-annotations.md](figma-annotations.md)
