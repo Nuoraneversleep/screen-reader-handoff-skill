@@ -86,6 +86,14 @@ Avoid `tabindex` values greater than `0` — they create a second, competing ord
 keyboard users on top of the DOM order and are almost always a sign something should
 have been reordered in markup instead.
 
+**The mismatch can also be deliberate, not accidental — and that's worth designing for.**
+A story/article card typically shows the photo above the headline visually. Put the
+headline *before* the photo in DOM order anyway, with CSS reordering the photo back on
+top visually: a screen reader user hears what the story is about immediately, instead
+of sitting through a photo description first. This is the one case where you *want*
+DOM order to diverge from visual order — call it out explicitly in Notes so a later
+reviewer doesn't "fix" it by matching the two back up.
+
 ### Accessible Name — Semantic HTML First
 
 **Use `none` when** the visible text, a `<label for>` association, or `alt` text is
