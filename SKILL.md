@@ -224,6 +224,35 @@ concepts (Role, DOM order, live regions) in full — use it as the reference for
 each Web-layer row's Notes should tell the web team, even though the row itself lives
 in the combined table below.
 
+**Everything in [web-schema.md](web-schema.md)'s Heading Levels, Landmarks, and Links
+sections applies unchanged inside a WebView** — the DOM inside a WebView is still a
+DOM, read by the same browser accessibility layer, regardless of the native shell
+wrapping it. Don't let the shell distract from the same checks that apply to a pure
+web page:
+
+- **Heading levels and nesting still matter, and still need the exact level kept.**
+  Even though the combined table's Trait/Element Type column uses native vocabulary
+  for everything else (see below), a Web-layer heading row still needs its `h`-level
+  written down somewhere — don't let it collapse to a bare "header" the way a native
+  header row does. Keep the level in the Component name or Notes if the Trait column
+  itself can't carry it (`Component: Story headline (h3)`).
+- **Landmarks inside the WebView still need identifying**, the same way `main`/
+  `navigation`/`banner` matter on a pure web page — a long article body inside a
+  WebView still benefits from a `main` landmark so a user can skip past a native
+  header straight to the content, even though the *seam* between native and web is
+  handled by the native ordering properties, not by landmarks.
+- **Link naming rules are unchanged.** A "Read more" link inside WebView story content
+  is exactly as broken pulled into the page's link list whether that WebView sits
+  inside a native app or a browser tab — the web accessibility tree doesn't know or
+  care that a native shell wraps it.
+- **One exception: Grouping in the combined table below still follows the native
+  model, not pure Web's always-`Standalone` rule.** The combined table's shape is the
+  native platform's shape, and a Web-layer story card there can still be authored as
+  one `Parent of N (combined)` row if that's how the app team wants that particular
+  seam to announce — pure Web's "never group" rule from
+  [web-schema.md](web-schema.md) is about a table using Web's own 12 columns, which
+  the combined table isn't.
+
 #### Deliver One Combined Table, Not One Per Layer
 
 A hybrid screen is one screen to the user — one continuous swipe sequence, not two
@@ -252,7 +281,9 @@ plus a separate web table:
   team, and cross-reference it by name from the Notes column of its corresponding row
   in the combined table. The combined table stays the single source of truth for
   reading **order** across the seam; the supplementary table is for that layer's own
-  implementation detail.
+  implementation detail — this is exactly where exact heading levels, landmark
+  identification, and per-link naming (see above) actually get specified, since the
+  combined table's simplified vocabulary has nowhere to carry that detail.
 
 ### 6. Quality Check
 
@@ -271,6 +302,18 @@ After generating, verify:
       in the Notes so it routes to the right team
 - [ ] The **Example** column reads naturally — read it aloud to check
 - [ ] No blank cells — use `none`, except Android **State** for auto-announced conditions
+- [ ] **On Web specifically**: every `heading` row has an exact level (`heading 2`, never
+      a bare `heading`), levels nest without skipping, and a repeated module reuses the
+      same level on every instance — see [web-schema.md](web-schema.md)'s Heading Levels
+      section, this is the single highest-value thing to get right on a web spec
+- [ ] **On Web specifically**: the page's major regions (`main`, `navigation`, `banner`,
+      `contentinfo`) are identified, and any repeated `navigation` landmarks have distinct
+      names — see [web-schema.md](web-schema.md)'s Landmarks section. A repeated card
+      module should be a heading, not its own landmark
+- [ ] **On Web specifically**: every link's Accessible Name makes sense pulled out of
+      context, in the page's own link list — no bare "Read more"/"Click here" repeated
+      across cards, no icon-only link missing a name, and any link that opens in a new
+      tab says so as part of its name — see [web-schema.md](web-schema.md)'s Links section
 
 ### 7. Deliver — TSV, Rendered Table, or Annotated Design
 
@@ -318,7 +361,7 @@ Read each Example aloud. If it sounds awkward or confusing, revise the Label, Hi
 | A carousel or swipeable content | Type: **adjustable/list**. Describe swipe behavior. Include position: "1 of 6" |
 | Text with a hyperlink inside it | Include the full text. Note that there's a link and how to access it. |
 | Price with strikethrough + discounted price | Combine into one label: "$30, discounted to $4 per month" |
-| A story/article card (photo + headline + dek + metadata, one clickable unit) | The photo illustrates the story, so it is **not** decorative — give it a real descriptive label, not `Hidden: Yes`. If the whole card is one link, model it as **Parent of N (combined)**: one Order number on the card itself, every piece listed below it as `Merged into parent` with a blank Order. **Put the headline first in that combined announcement and the photo last**, regardless of which one displays first visually — a screen reader user should hear "what is this story" before sitting through a photo description, not after. That means the combined name's word order intentionally differs from top-to-bottom visual order; this is the web's DOM-vs-visual-order concept in practice (see [web-schema.md](web-schema.md)) — implemented with CSS reordering (flex/grid `order`), not a change to what displays. Flag it clearly in Notes so a later reviewer doesn't "fix" it by matching DOM order back to visual order. Also flag in Notes if the combined name reads as too long overall — that's a real trade-off, not something to silently fix by hiding the photo. |
+| A story/article card (photo + headline + dek + metadata, one clickable unit) | The photo illustrates the story, so it is **not** decorative — give it a real descriptive label, not `Hidden: Yes`. **Put the headline ahead of the photo in reading order either way**, regardless of which one displays first visually — a screen reader user should hear "what is this story" before sitting through a photo description, not after. On **native** (iOS/Android), if the whole card is one control, model it as **Parent of N (combined)**: one Order number on the card itself, every piece listed below it as `Merged into parent` with a blank Order, headline first inside that combined announcement and the photo last. On pure **Web**, skip grouping entirely — [web-schema.md](web-schema.md) always uses `Standalone`, so the same card is several standalone rows, each with its own Order number, headline's Order number earlier than the photo's. Either way this is the DOM-vs-visual-order concept in practice — implemented with CSS reordering (flex/grid `order`), not a change to what displays — so flag it clearly in Notes so a later reviewer doesn't "fix" it by matching order back to the visual layout. On native, also flag in Notes if the combined name reads as too long overall — that's a real trade-off, not something to silently fix by hiding the photo. |
 
 ## Platform Schema References
 

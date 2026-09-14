@@ -25,10 +25,10 @@ schema drops Hint and adds **Announce on change**, matching the TalkBack templat
 | 1 | **Order** | Number each element in **reading order** — the order the virtual cursor visits elements, which is **DOM order**, not visual order. Leave blank for `Merged into parent` rows and `Hidden: Yes` rows. See "Order — DOM vs. Tab Order vs. Visual Order" below before numbering anything. | `1`, `2`, *(blank)* |
 | 2 | **Component** | Short name for the element — match the component/dev-tool name when possible | `Close button`, `Page header`, `Price card` |
 | 3 | **Layer** | `Native` or `Web`. On an all-web screen every row is `Web`; on a hybrid screen (native shell + WebView) this decides which team and which API owns the row — see [SKILL.md § Hybrid Screens](SKILL.md#5-hybrid-screens--fill-in-the-layer-column). | `Web`, `Native` |
-| 4 | **Role** | The accessible role — from a real HTML element (preferred) or an explicit `role` attribute. See Role Guide below. | `none`, `button`, `heading`, `link` |
+| 4 | **Role** | The accessible role — from a real HTML element (preferred) or an explicit `role` attribute. See Role Guide below. **For `heading`, always write the exact level** (`heading 2`, not just `heading`) — see "Heading Levels" below, this is the single highest-value thing to get right on a web spec. For a landmark row, write the landmark type (`main`, `navigation`, `banner`, `contentinfo`, `region`) — see "Landmarks" below. | `none`, `button`, `heading 2`, `link`, `navigation` |
 | 5 | **Accessible Name** | What the screen reader reads as the element's name. Write `none` if the visible text, `alt`, or associated `<label>` already gives a clear name. | `none`, `Close`, `Free trial offer timeline` |
 | 6 | **State** | Current state if it changes. **Leave truly blank** (not `none`) for native form controls — a real `<input type="checkbox">`, `<input type="radio">`, `<select>` — the browser announces their state automatically from the element itself, and adding text risks a double announcement. For any custom ARIA widget (a `div` styled as a switch, a custom combobox), state is **never** automatic — write it explicitly. | *(blank)*, `expanded`, `checked`, `current page` |
-| 7 | **Grouping** | `Standalone`, `Parent of N (labelledby group)`, or `Merged into parent`. A landmark or `role="group"`/`role="region"` with `aria-labelledby` merges its children's names into one announcement, the web equivalent of iOS's `.combine`. | `Standalone`, `Parent of 3 (labelledby group)` |
+| 7 | **Grouping** | Always `Standalone`. Pure Web specs don't use native's `Parent of N (combined)` / `Merged into parent` model — every element a user can land on gets its own row and its own Order number, even inside a card that reads as one visual unit. See "Grouping — Always Standalone on Web" below. | `Standalone` |
 | 8 | **Hidden** | `Yes` for decorative elements removed from the accessibility tree. Engineers apply `aria-hidden="true"` (or `display:none`/`visibility:hidden`, which remove it as a side effect). Distinguish this from the opposite pattern — visually-hidden-but-accessible text (a `.sr-only` class) — which is a `Hidden: No` row with an explicit **Accessible Name** and nothing visible on screen. | `No`, `Yes` |
 | 9 | **Actions** | Every way to activate the element, in priority order. **Every action must have a keyboard path** — this is non-negotiable on the web (WCAG 2.1.1): if it responds to click or hover, it must also respond to a key. `Enter`/`Space` for buttons, `Enter` for links, arrow keys for composite widgets (tabs, listbox, menu) using a roving-tabindex pattern. Use `None` for non-interactive elements. | `Enter or Space activates`, `Arrow keys move between tabs`, `None` |
 | 10 | **Announce on change** | `Polite` = waits for a pause (toasts, confirmations). `Assertive` = interrupts immediately (errors, urgent updates). `None` = static content. | `None`, `Polite`, `Assertive` |
@@ -49,16 +49,157 @@ requires you to hand-build all three yourself, and it's easy to miss one.
 | Role | Use When... | What's Announced |
 |------|------------|-------------------|
 | `none` | Plain text — a paragraph, a label, a description | Nothing extra |
-| `heading` | A section title (`<h1>`–`<h6>`, or `role="heading" aria-level`) | "heading" plus its **level** — `"heading 2"` — the one thing native headings can't do |
+| `heading` | A section title (`<h1>`–`<h6>`, or `role="heading" aria-level`) | "heading" plus its **level** — `"heading 2"` — the one thing native headings can't do. Never write a bare `heading` in this schema — always the number. |
 | `button` | Performs an in-page action | "button" |
-| `link` | Navigates — in-page, to another page, or off-site | "link" |
+| `link` | Navigates to a new URL or place in the page — in-page, to another page, or off-site | "link" — see "Links" below, the Accessible Name must make sense out of context, in the page's link list |
 | `image` | A meaningful `<img>`, `<svg role="img">`, or CSS background promoted via `role="img"` | "image", from its `alt` |
 | `textbox` | A text input or `<textarea>` | "edit text" / "text field", plus its label |
 | `checkbox` | A checkable option in a multi-select group | "checkbox" + checked state |
 | `radio` | An option in a single-select group | "radio button" + selected state |
 | `switch` | A custom on/off control styled as a toggle | "switch" + on/off state — **never automatic**, always author `aria-checked` |
 | `tab` | A tab in a tablist | "tab" + selected state |
-| `region` / `navigation` / `main` / `banner` | A landmark — lets users jump between page sections, the web's version of iOS's rotor / Android's heading navigation | Announces the landmark type and its label |
+| `main` / `navigation` / `banner` / `contentinfo` / `region` / `complementary` / `search` / `form` | A landmark — lets users jump between page sections, the web's version of iOS's rotor / Android's heading navigation | Announces the landmark type and its label — see "Landmarks" below |
+
+## Heading Levels — The Highest-Value Thing to Get Right on a Web Spec
+
+This is the one column where getting it right matters more than everywhere else in
+this schema combined. Headings are how a screen reader user *skims* a web page — most
+open a page and immediately pull up a list of every heading to decide where to go,
+the same way a sighted user's eye jumps straight to bold section titles. A missing or
+wrong level breaks that skim for the entire page, not just one row.
+
+**Levels must nest without skipping**, the same way you wouldn't skip from an `<h1>` to
+an `<h4>` in a document outline:
+
+- Exactly **one `h1` per page** — the page's own title. Not the site name/logo (that's
+  a landmark's label, not a heading), not the section title of the first module. HTML
+  technically permits more than one (each `<section>`/`<article>` could restart at
+  `h1` under the old sectioning-based outline algorithm), but no browser or screen
+  reader ever implemented that algorithm, and it's since been dropped from the spec —
+  every screen reader just flattens all headings into one linear list regardless of
+  nesting. Two `h1`s in that list look like two competing "the title of this page,"
+  with nothing to say which one actually is. Treat "one `h1`" as a hard rule, not a
+  guideline with exceptions.
+- Each subsection increases by exactly one level from its parent: an `h1` page title
+  with `h2` section titles, each containing `h3` sub-headings, and so on. Never jump
+  from `h2` straight to `h4` because it "looks right" visually — visual weight (font
+  size, bold) and heading level are two different systems that happen to often
+  correlate; a design can use a big bold style for something that is not structurally
+  a heading at all (see below), or a small label for something that structurally is.
+- A repeated module (a story card, a package of "In Case You Missed It" links) reuses
+  the **same level every time it repeats**, whatever level is correct for its place in
+  the outline — don't let one instance drift to a different level than its siblings.
+
+**Every row that is visually a bold section title needs a Role/level decision, not an
+assumption.** Walk the page and ask, for each candidate: does this genuinely start a
+new section a user would want to jump to (`heading N`), or is it styled boldly for
+emphasis without functioning as a navigation target (`none`)? A "SPONSOR CONTENT"
+eyebrow label above a headline, for instance, is usually **not** its own heading level —
+it's more often part of that headline's accessible name or a `none` row directly before
+it, not a separate `h3` competing with the headline for the same list position.
+
+**Write the exact level you intend, and say why in Notes when it's not obvious from
+position alone** — e.g. `• This card repeats 6 times down the page; every instance is
+h3, one level under the "Opinion" package's h2` — so engineering doesn't have to guess
+at the outline from a screenshot.
+
+**A card headline is very often both a heading and a link at once** — e.g.
+`<h3><a href="...">Headline text</a></h3>` — not one or the other. This schema's Role
+column only holds one value, so write `heading 3` (the structural fact that matters
+for page skimming) and add `• Also the card's link to the full story` in Notes, rather
+than writing `link` and losing the heading level, or vice versa. Don't treat this as
+an either/or decision.
+
+## Landmarks — The Web's Version of Rotor / Heading Navigation
+
+Landmarks let a screen reader user jump straight to `main`, skip repeated navigation,
+or ask "what page regions exist here" the way a sighted user's eye does from layout
+alone. A page with zero landmarks forces every user to walk the entire DOM linearly
+with no way to skip past a large nav or a long list of unrelated cards.
+
+**Every page needs, at minimum:**
+
+| Landmark | Use for | Notes |
+|----------|---------|-------|
+| `banner` | The page masthead/header, once per page | Only the *global* site header — see [SKILL.md](SKILL.md)'s shared-web-chrome exclusion; if the masthead itself is out of scope for this spec, its landmark role still matters to note once, since it changes how many `main`-adjacent siblings exist |
+| `navigation` | Each distinct block of navigation links — primary nav, footer nav, a package's "jump to section" list | If a page has more than one, each needs a distinct **Accessible Name** (`aria-label="Primary"` vs. `aria-label="Footer"`) — otherwise a screen reader user hears "navigation, navigation" with no way to tell them apart when jumping between landmarks |
+| `main` | The primary content of the page, exactly once | If `main` is missing, a screen reader user has no way to skip straight past the header/nav to the actual content — flag this as a real gap, not a nice-to-have |
+| `contentinfo` | The page footer, once per page | |
+| `region` / `complementary` | A named secondary section worth jumping to directly (a sidebar, a "Related Coverage" box) | Needs an explicit **Accessible Name** via `aria-label` or `aria-labelledby` — an unlabeled `region` is close to useless in landmark navigation, since every unlabeled one just announces "region" with nothing to distinguish it |
+| `search` | A search form/widget | |
+
+**Don't over-landmark.** Wrapping every card or every visual box in its own `region`
+defeats the purpose — landmark navigation is supposed to jump between a *small* number
+of major areas, not replicate the full visual hierarchy. If a page would end up with
+15+ landmarks, that's a signal most of them should be `none`/plain divs instead, with
+headings (not landmarks) doing the work of marking subsections.
+
+**A repeated module is usually a heading, not a landmark.** A story card that repeats
+20 times down a homepage should NOT be 20 `region`s — that many identically-purposed
+landmarks makes the landmark list itself the thing a user has to skim through
+linearly, defeating the point. Give each card a heading at the right level instead (see
+above), and reserve landmarks for the page's small number of major, structurally
+distinct areas.
+
+## Links — Getting Them Right Matters as Much as Headings
+
+Just like the heading list, most screen readers let a user pull up a standalone list of
+every link on the page. That list is only useful if each entry makes sense **on its
+own, out of context** — with no surrounding sentence, no card layout, no visual
+proximity to a photo. Get this wrong across a whole page (ten links that all say "Read
+more") and the link list becomes useless, the same failure mode as a heading list full
+of the wrong levels.
+
+**Every link's Accessible Name must say where it goes, without relying on
+surroundings.** This is a real WCAG success criterion (2.4.4, Link Purpose in
+Context — and the stronger 2.4.9, Link Purpose, no context, for AA+ work), not a
+stylistic preference:
+
+- ❌ `Read more` / `Click here` / `Learn more` repeated across many cards — identical
+  in the link list, indistinguishable from each other once pulled out of their cards.
+- ✅ `Read more about the government shutdown` — or, more simply, make the **headline
+  itself** the link (see the heading-and-link pattern above) so its name already says
+  what the story is, and drop the redundant "Read more" text entirely, or `aria-hidden`
+  it if it needs to stay visible for design reasons with the real name carried by the
+  headline.
+
+**Icon-only links need an explicit Accessible Name, the same as icon-only buttons.** A
+bare `<a href="...">` wrapping only an SVG or icon font glyph has no accessible name at
+all unless one is authored — screen reader users hear either the raw URL or nothing
+useful. `aria-label="Share this article"` on the anchor itself, not just an
+adjacent visible label.
+
+**Adjacent links to the same destination need a decision, not an accident.** The story
+card pattern from "Grouping — Always Standalone on Web" above — headline link, plus a
+separately-linked thumbnail image pointing at the same story — is extremely common in
+editorial layouts and is *fine* on the web, unlike native's combined-row model. But
+call out explicitly in Notes whether that's the intended pattern (two focus stops,
+same destination) or whether the image should NOT independently link (headline is the
+only link; image is `Actions: None`) — don't let it default silently one way or the
+other, since it changes a real row's Actions value.
+
+**Distinguish link from button by what happens, not by what it looks like.** A
+button-styled anchor is a common source of confusion in both directions:
+- **Navigates to a new URL or a new place in the page** (even via `#anchor`) → `Role:
+  link`, regardless of whether it's styled to look like a button.
+  Actions: `Enter activates`.
+- **Performs an action in place — submits, toggles, opens a dialog, without changing
+  the URL** → `Role: button`, regardless of whether it's styled to look like a text
+  link. Actions: `Enter or Space activates`.
+
+Flag it in Notes whenever the visual style and the underlying behavior disagree (a
+link-styled "Sign out" that's actually a form-submitting button, or a button-styled
+"View all comments" that's actually a same-page anchor jump) — that mismatch is a sign
+the design and the correct ARIA role are about to diverge, and it's cheaper to catch
+before implementation than after.
+
+**A link opening in a new tab or window needs that stated as part of the name**, not
+left implicit — screen reader users get no visual cue (no new browser chrome flash)
+the way sighted users do, so losing their place unexpectedly is disorienting. Convention
+is a trailing screen-reader-only span: `<a href="...">Subscriber FAQ<span
+class="sr-only">, opens in a new tab</span></a>`, giving an Accessible Name like
+`Subscriber FAQ, opens in a new tab`. Note this in the row rather than assuming
+engineering will remember — it's easy to add `target="_blank"` without it.
 
 ## Column-by-Column Guidance
 
@@ -87,12 +228,48 @@ keyboard users on top of the DOM order and are almost always a sign something sh
 have been reordered in markup instead.
 
 **The mismatch can also be deliberate, not accidental — and that's worth designing for.**
-A story/article card typically shows the photo above the headline visually. Put the
-headline *before* the photo in DOM order anyway, with CSS reordering the photo back on
-top visually: a screen reader user hears what the story is about immediately, instead
-of sitting through a photo description first. This is the one case where you *want*
-DOM order to diverge from visual order — call it out explicitly in Notes so a later
-reviewer doesn't "fix" it by matching the two back up.
+A story/article card typically shows the photo above the headline visually. Give the
+headline an earlier **Order** number than the photo anyway — put it before the photo
+in DOM order, with CSS reordering the photo back on top visually — so a screen reader
+user hears what the story is about immediately, instead of sitting through a photo
+description first. This holds whether the card exposes one link or several standalone
+rows (see "Grouping — Always Standalone on Web" below): either way, order the headline
+ahead of the photo. This is the one case where you *want* DOM order to diverge from
+visual order — call it out explicitly in Notes so a later reviewer doesn't "fix" it by
+matching the two back up.
+
+### Grouping — Always Standalone on Web
+
+Every Grouping cell is `Standalone`. Pure Web specs skip the native `Parent of N
+(combined)` / `Merged into parent` model entirely — there's no row that "consumes" a
+sibling's Order number. Give every text node, image, and link its own row and its own
+Order number, even when several of them make up what looks like one card.
+
+This means a story/article card — photo, headline, dek, read time — is **several
+standalone rows**, not one combined row with the rest merged into it:
+
+| Order | Component | Role | Accessible Name | Actions |
+|-------|-----------|------|------------------|---------|
+| 1 | Story headline | `link` | A 20-Minute Workout to Build Upper-Body Strength | `Enter activates` |
+| 2 | Summary / dek | `none` | none | `None` |
+| 3 | Read time | `none` | none | `None` |
+| 4 | Photo credit | `none` | none | `None` |
+| 5 | Thumbnail image | `image` | A man performs a resistance band exercise against a pink background | `None` (or `Enter activates` if the image is also wrapped in a link to the same story) |
+
+Two things carry over from the combined version without needing a Grouping value:
+
+- **Headline before photo, still.** The headline gets the earliest Order number in the
+  card (`1`) even though the photo displays above it — same reasoning as the DOM-order
+  note above, just expressed as row order instead of word order inside one name.
+- **The image keeps a real Accessible Name.** It's informative, not decorative — see
+  the story-card row in [SKILL.md](SKILL.md)'s Quick Reference table.
+
+If only the headline (or only the image) is wrapped in a link — the far more common
+editorial pattern than one link swallowing the whole card — say so directly in Notes,
+since it changes which row(s) carry an Action and whether two rows land on the same
+destination (worth a one-line flag, not a redesign: two focus stops that both lead to
+the same story is normal on the web, unlike a single card-length link with a
+paragraph-long spoken name).
 
 ### Accessible Name — Semantic HTML First
 
@@ -189,7 +366,12 @@ Combine Accessible Name, Role, and State, in that order.
 - `• This toggle is a custom widget — needs aria-checked kept in sync with its visual state`
 - `• Visual order here comes from CSS Grid, not DOM order — verify reading order matches Column 1 before shipping`
 - `• Icon-only — needs aria-label, the icon itself has no accessible name`
+- `• This is h3, one level under the "Opinion" package's h2 — every repeat of this card stays h3`
+- `• "Primary" and "Footer" nav landmarks need distinct aria-labels so they're not both announced as just "navigation"`
 - `• Live region container must exist in the DOM before the confirmation text is inserted`
+- `• Opens in a new tab — accessible name needs ", opens in a new tab" appended, e.g. via a visually-hidden span`
+- `• This "Read more" link should have a real destination name, not literally "Read more" — it's indistinguishable from every other card's link in the page's link list`
+- `• Styled as a button but submits no form and changes no state — this is actually a link (Role: link, Actions: Enter activates), not a button`
 
 Avoid: `• Add aria-label="Close"` (that's the engineer's implementation, not your intent).
 
@@ -199,9 +381,11 @@ Avoid: `• Add aria-label="Close"` (that's the engineer's implementation, not y
 |---------|-----|----------------------|
 | What announces the element | Browser builds an accessibility tree from the DOM + ARIA, and the screen reader walks *that* tree | The app's UI framework builds the tree directly from view properties; no intermediate document |
 | Reading order | DOM order — can silently diverge from visual order via ordinary CSS (flex/grid `order`, `position`) | Visual position by default; diverging requires a deliberate extra property (`accessibilitySortPriority` / `traversalIndex`) |
-| Headings | Carry real levels — `heading 1`–`heading 6` | No levels (Android `heading()` is yes/no; iOS heading trait has no level) |
+| Headings | Carry real levels — `heading 1`–`heading 6`, which most users navigate a page by skimming; a wrong or skipped level breaks that skim page-wide | No levels (Android `heading()` is yes/no; iOS heading trait has no level) |
+| Landmarks | `main`/`navigation`/`banner`/`region`/etc. — a distinct jump-navigation layer alongside headings; too many defeats the purpose | No equivalent — iOS's rotor and Android's heading list only expose headings, not a separate landmark layer |
 | Automatic state | Only for genuine native HTML controls (`<input>`, `<select>`) — custom ARIA widgets always need explicit state | Native OS controls (`Switch`, `Checkbox`) always auto-announce state regardless of custom styling |
 | Hiding | `aria-hidden` (tree only) vs. `display:none`/`visibility:hidden` (tree + visual) — two different tools for two different intents | `accessibilityHidden` / `clearAndSetSemantics` — one tool, tree only |
 | Keyboard operability | A first-class, explicit requirement (WCAG 2.1.1) — every interaction needs a keyboard path | Governed by touch gestures and the OS AT's own gesture vocabulary (double-tap, swipe) — not something the app individually re-implements |
 | Focus indicator | Designable and stylable (`:focus-visible` outline) — a real design decision that can be gotten wrong | Handled by the OS's own focus highlight — not a per-app design decision |
+| Link naming | Must make sense pulled out of context in a standalone link list (WCAG 2.4.4/2.4.9) — a page of "Read more" links is a real failure mode | No page-wide link list exists to pull names out of context for; a native label only has to make sense in place |
 | Live/dynamic updates | `aria-live` — declarative, attached to a container, with real cross-browser inconsistency | `liveRegion` (Android, declarative) or `AccessibilityNotification.Announcement` (iOS, imperative) |
