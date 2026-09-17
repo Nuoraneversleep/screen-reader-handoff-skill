@@ -231,7 +231,9 @@ copying only the positioning half.
 - **Web columns:** `['Order','Component','Role','Accessible Name','State','Grouping','Hidden','Actions','Announce on change','Web example','Notes']` —
   **11 columns, no Layer** (every row on a pure Web spec is `Web`, so the column would
   carry zero information — see [web-schema.md](web-schema.md)). Subtitle
-  `Accessible Name → Role → State`. Otherwise the same shape as TalkBack's — both drop
+  `Accessible Name → Role → State`. Title the table `Web (Semantic HTML) — <screen
+  name>`, not `Web (ARIA)` — the schema's own priority is a real HTML element first,
+  ARIA only where noted, and the old title told engineers the opposite. Otherwise the same shape as TalkBack's — both drop
   Hint in favor of Announce on change. `WIDTHS` needs 11 entries to match, not 12.
 - **Empty State cells stay genuinely empty on Android and Web** — for Switch,
   Checkbox, Radio, Toggle, selectable cells, disabled controls (Android) and native

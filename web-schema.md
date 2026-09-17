@@ -1,4 +1,12 @@
-# Web (ARIA) — Table Schema
+# Web (Semantic HTML) — Table Schema
+
+Despite the title, this schema is not an ARIA authoring guide. The priority order is
+semantic HTML first — a real `<button>`, `<nav>`, `<h2>` — with ARIA reached for only
+where semantic HTML has no equivalent (a custom switch, a live region, a landmark
+label). Calling this table "Web (ARIA)" would tell engineers the deliverable is an
+ARIA spec, when the honest summary of what's actually being specified is closer to
+"semantic HTML, with ARIA only where noted" — see the [Role Guide](#role-guide) below,
+which opens with exactly that preference.
 
 ## How a Screen Reader Reads a Web Element
 

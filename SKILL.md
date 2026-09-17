@@ -33,7 +33,8 @@ Ask both up front, in the same round of questions, before reading the design:
   a region as a WebView, so guessing from the frame alone is unreliable:
   - **iOS** → VoiceOver table (see [voiceover-schema.md](voiceover-schema.md))
   - **Android** → TalkBack table (see [talkback-schema.md](talkback-schema.md))
-  - **Web** → Web/ARIA table (see [web-schema.md](web-schema.md))
+  - **Web** → Web (Semantic HTML) table (see [web-schema.md](web-schema.md)) — the
+    title reflects that semantic HTML is the primary tool, ARIA only where noted
   - **Hybrid** (native app shell containing a WebView) → generate **one** combined
     table, not one per layer — see Step 5. Picking this ask three more things before
     reading the design, since they change what you need from it:
@@ -268,7 +269,7 @@ web page:
   native platform's shape, and a Web-layer story card there can still be authored as
   one `Parent of N (combined)` row if that's how the app team wants that particular
   seam to announce — pure Web's "never group" rule from
-  [web-schema.md](web-schema.md) is about a table using Web's own 12 columns, which
+  [web-schema.md](web-schema.md) is about a table using Web's own 11 columns, which
   the combined table isn't.
 
 #### Deliver One Combined Table, Not One Per Layer
@@ -482,7 +483,7 @@ Read each Example aloud. If it sounds awkward or confusing, revise the Label, Hi
 
 - **iOS VoiceOver**: [voiceover-schema.md](voiceover-schema.md)
 - **Android TalkBack**: [talkback-schema.md](talkback-schema.md)
-- **Web (ARIA)**: [web-schema.md](web-schema.md)
+- **Web (Semantic HTML)**: [web-schema.md](web-schema.md)
 - **Full examples with best-practice annotations**: [examples.md](examples.md)
 - **Rendering the table onto the Figma canvas**: [figma-canvas.md](figma-canvas.md)
 - **Annotating the design with numbered markers**: [figma-annotations.md](figma-annotations.md)

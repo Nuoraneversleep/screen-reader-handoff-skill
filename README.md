@@ -3,14 +3,14 @@
 An agent skill for [Claude Code](https://claude.com/claude-code) and
 [Cursor](https://cursor.com) that helps designers generate screen reader
 accessibility handoff tables for iOS VoiceOver, Android TalkBack, and the Web
-(ARIA).
+(semantic HTML, with ARIA only where the schema calls for it).
 
 No screen reader expertise required — the skill guides you through creating structured specs that tell engineers exactly what a screen reader user should hear on every screen.
 
 ## What It Does
 
 - Generates **tab-separated (TSV) tables** you can paste directly into Figma or Google Sheets
-- Supports **iOS VoiceOver**, **Android TalkBack**, and **Web (ARIA)** with platform-specific schemas
+- Supports **iOS VoiceOver**, **Android TalkBack**, and **Web (Semantic HTML)** with platform-specific schemas
 - Reads designs from **Figma URLs** (via MCP) or manual screen descriptions
 - **Renders the spec onto the Figma canvas**, beside the screen it documents, so
   reviewers can check an announcement against the design without switching tools
@@ -77,7 +77,7 @@ screenshot or a written description of the screen.
 | `SKILL.md` | Main skill instructions — workflow, quality checklist, common UI patterns |
 | `voiceover-schema.md` | iOS VoiceOver 12-column table schema and column-by-column guidance |
 | `talkback-schema.md` | Android TalkBack 12-column table schema and platform differences |
-| `web-schema.md` | Web (ARIA) 12-column table schema — Role, DOM order vs. visual order, live regions, and how it differs from native |
+| `web-schema.md` | Web (Semantic HTML) 11-column table schema — Role, DOM order vs. visual order, live regions, and how it differs from native |
 | `examples.md` | 5 fully annotated example tables with best-practice explanations |
 | `figma-canvas.md` | Script for rendering a finished table onto the Figma canvas, plus the auto-layout constraints that trip it up |
 | `figma-annotations.md` | Script for marking up the design itself with numbered badges tied to each row's Order number |
