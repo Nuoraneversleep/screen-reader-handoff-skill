@@ -408,9 +408,21 @@ of the same role sharing one label (or both unlabeled), more landmarks than the 
 actually needs (see [web-schema.md](web-schema.md)'s Landmarks section on
 over-landmarking).
 
-Deliver both as plain text/markdown blocks alongside the row table — they don't need
-`use_figma` rendering or canvas annotation the way the row table does in Step 7, since
-they aren't tied to individual on-screen elements the same way.
+Deliver both as plain text/markdown blocks alongside the row table by default — they
+don't need canvas *annotation* (numbered badges) the way the row table does in Step 7,
+since they aren't tied to individual on-screen elements the same way.
+
+**If the delivery format is "Rendered in Figma," also render these two as their own
+frames** next to the table, not just as chat text — same rationale as rendering the
+table itself: the reviewer is working in the file, not switching to a pasted TSV.
+When you do, **the same parenting rule from
+[figma-canvas.md](figma-canvas.md#parent-every-new-node-into-the-targets-own-parent)
+applies to these frames too, not just the main table** — `figma.createFrame()`
+defaults to a page-level child, and if the table/frame you're documenting lives inside
+a Section (common when a file holds multiple candidate screens), a Heading Outline or
+Landmark Map positioned with target-relative math but left un-reparented will render
+in the wrong coordinate space and appear to be missing. `target.parent.appendChild(...)`
+before setting `x`/`y`, exactly as for the table.
 
 ### 7. Deliver — TSV, Rendered Table, or Annotated Design
 

@@ -138,6 +138,12 @@ ROWS.forEach((r) => table.appendChild(row(r, { muted: !String(r[0]).trim() })));
 // Park it to the right of the frame being documented.
 const target = figma.currentPage.selection[0];
 if (target) {
+  // MUST append into target's own parent, not leave it as a page child (the
+  // default for figma.createFrame()) — if target sits inside a Section, page-level
+  // coordinates and section-relative coordinates are different origins, and the
+  // table silently renders far from the frame it documents. See "Parent Every New
+  // Node Into the Target's Own Parent" below before skipping this line.
+  target.parent.appendChild(table);
   table.x = target.x + target.width + 160;
   table.y = target.y;
 }
@@ -145,6 +151,52 @@ figma.currentPage.selection = [table];
 figma.viewport.scrollAndZoomIntoView([table]);
 'Rendered ' + ROWS.length + ' rows';
 ```
+
+## Parent Every New Node Into the Target's Own Parent
+
+**Before positioning any new node with `target.x + ...` math, first call
+`target.parent.appendChild(newNode)`.** `figma.createFrame()` and
+`figma.createAutoLayout()` default to appending as a direct child of
+`figma.currentPage` — a plain page origin. But the frame you're documenting is very
+often *not* a direct page child: files that use Sections (a common way to organize
+multiple candidate screens or spec drafts on one page) nest the frame one level
+deeper, inside a `SECTION` node, which has its own local coordinate space.
+
+If you skip the `appendChild` and only set `x`/`y` using target-relative math, the
+new node still uses **page-level coordinates** while the target frame's `x`/`y` are
+relative to its **section**. The two numbers look reasonable individually but
+describe different origins, so the new node renders correctly-sized but far away in
+empty canvas space — easy to mistake for "the tool silently failed" when it actually
+ran without error. This bit twice in one real session: once for the main table, and
+again for the Heading Outline and Landmark Map companion docs (see
+[SKILL.md](SKILL.md#65-on-web--add-a-heading-outline-and-landmark-map)) — same root
+cause both times, since positioning code and parenting code are two different lines
+and it's easy to write one without the other.
+
+**Check before positioning, not after rendering:**
+```js
+const target = figma.currentPage.selection[0]; // or getNodeByIdAsync(knownId)
+target.parent.appendChild(newNode);   // do this FIRST
+newNode.x = target.x + target.width + 160;      // THEN this is safe —
+newNode.y = target.y;                            // both x/y now share target's origin
+```
+
+If you discover the mistake after the fact (a node "went missing" that actually
+rendered off-canvas), the fix is the same call, applied retroactively — reparent, then
+recompute the offset from the *new* parent:
+```js
+const target = await figma.getNodeByIdAsync(TARGET_ID);
+const stray = await figma.getNodeByIdAsync(STRAY_ID);
+target.parent.appendChild(stray);   // moves it into the same coordinate space
+stray.x = target.x + target.width + 160;
+stray.y = target.y;
+```
+
+This applies to every companion artifact this skill creates alongside the table —
+the annotation overlay ([figma-annotations.md](figma-annotations.md) already does
+this correctly for the overlay: `target.parent.appendChild(overlay)`), the Heading
+Outline, and the Landmark Map. Match the pattern in every new script rather than
+copying only the positioning half.
 
 ## Notes
 
