@@ -153,9 +153,11 @@ figma.viewport.scrollAndZoomIntoView([table]);
   overlap, or wrap both in a vertical auto-layout frame.
 - **TalkBack columns:** `['Order','Component','Layer','Element Type','Description','State','Grouping','Hidden','Action','Announce on change','TalkBack example','Notes']`,
   and a subtitle of `Description → State → Element Type → Action hint`.
-- **Web columns:** `['Order','Component','Layer','Role','Accessible Name','State','Grouping','Hidden','Actions','Announce on change','Web example','Notes']`,
-  and a subtitle of `Accessible Name → Role → State`. Same shape as TalkBack's — both
-  drop Hint in favor of Announce on change.
+- **Web columns:** `['Order','Component','Role','Accessible Name','State','Grouping','Hidden','Actions','Announce on change','Web example','Notes']` —
+  **11 columns, no Layer** (every row on a pure Web spec is `Web`, so the column would
+  carry zero information — see [web-schema.md](web-schema.md)). Subtitle
+  `Accessible Name → Role → State`. Otherwise the same shape as TalkBack's — both drop
+  Hint in favor of Announce on change. `WIDTHS` needs 11 entries to match, not 12.
 - **Empty State cells stay genuinely empty on Android and Web** — for Switch,
   Checkbox, Radio, Toggle, selectable cells, disabled controls (Android) and native
   `<input type="checkbox">`/`<input type="radio">`/`<select>` (Web), pass `''`, not

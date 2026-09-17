@@ -18,26 +18,34 @@ in most AT/browser combinations, but support is inconsistent enough that it belo
 **Notes** as implementation guidance rather than its own column. That's also why this
 schema drops Hint and adds **Announce on change**, matching the TalkBack template.
 
-## The 12 Columns
+## The 11 Columns
+
+**No Layer column on a pure Web spec.** Layer (`Native`/`Web`) only earns its place
+when a table actually mixes rows owned by two different teams — the Hybrid combined
+table in [SKILL.md § Hybrid Screens](SKILL.md#5-hybrid-screens--fill-in-the-layer-column).
+On a pure Web spec every single row is `Web`, so the column carries zero information
+and just adds a column engineering has to skim past on every row. If this table is a
+*supplementary* Web-detail table referenced from a Hybrid combined table's Notes, it
+still doesn't need Layer either — that combined table already carries Layer for the
+seam; this table's whole reason for existing is that it's all Web.
 
 | # | Column | What to Write | Examples |
 |---|--------|--------------|----------|
 | 1 | **Order** | Number each element in **reading order** — the order the virtual cursor visits elements, which is **DOM order**, not visual order. Leave blank for `Merged into parent` rows and `Hidden: Yes` rows. See "Order — DOM vs. Tab Order vs. Visual Order" below before numbering anything. | `1`, `2`, *(blank)* |
 | 2 | **Component** | Short name for the element — match the component/dev-tool name when possible | `Close button`, `Page header`, `Price card` |
-| 3 | **Layer** | `Native` or `Web`. On an all-web screen every row is `Web`; on a hybrid screen (native shell + WebView) this decides which team and which API owns the row — see [SKILL.md § Hybrid Screens](SKILL.md#5-hybrid-screens--fill-in-the-layer-column). | `Web`, `Native` |
-| 4 | **Role** | The accessible role — from a real HTML element (preferred) or an explicit `role` attribute. See Role Guide below. **For `heading`, always write the exact level** (`heading 2`, not just `heading`) — see "Heading Levels" below, this is the single highest-value thing to get right on a web spec. For a landmark row, write the landmark type (`main`, `navigation`, `banner`, `contentinfo`, `region`) — see "Landmarks" below. | `none`, `button`, `heading 2`, `link`, `navigation` |
-| 5 | **Accessible Name** | What the screen reader reads as the element's name. Write `none` if the visible text, `alt`, or associated `<label>` already gives a clear name. | `none`, `Close`, `Free trial offer timeline` |
-| 6 | **State** | Current state if it changes. **Leave truly blank** (not `none`) for native form controls — a real `<input type="checkbox">`, `<input type="radio">`, `<select>` — the browser announces their state automatically from the element itself, and adding text risks a double announcement. For any custom ARIA widget (a `div` styled as a switch, a custom combobox), state is **never** automatic — write it explicitly. | *(blank)*, `expanded`, `checked`, `current page` |
-| 7 | **Grouping** | Always `Standalone`. Pure Web specs don't use native's `Parent of N (combined)` / `Merged into parent` model — every element a user can land on gets its own row and its own Order number, even inside a card that reads as one visual unit. See "Grouping — Always Standalone on Web" below. | `Standalone` |
-| 8 | **Hidden** | `Yes` for decorative elements removed from the accessibility tree. Engineers apply `aria-hidden="true"` (or `display:none`/`visibility:hidden`, which remove it as a side effect). Distinguish this from the opposite pattern — visually-hidden-but-accessible text (a `.sr-only` class) — which is a `Hidden: No` row with an explicit **Accessible Name** and nothing visible on screen. | `No`, `Yes` |
-| 9 | **Actions** | Every way to activate the element, in priority order. **Every action must have a keyboard path** — this is non-negotiable on the web (WCAG 2.1.1): if it responds to click or hover, it must also respond to a key. `Enter`/`Space` for buttons, `Enter` for links, arrow keys for composite widgets (tabs, listbox, menu) using a roving-tabindex pattern. Use `None` for non-interactive elements. | `Enter or Space activates`, `Arrow keys move between tabs`, `None` |
-| 10 | **Announce on change** | `Polite` = waits for a pause (toasts, confirmations). `Assertive` = interrupts immediately (errors, urgent updates). `None` = static content. | `None`, `Polite`, `Assertive` |
-| 11 | **Web example** | The full sentence the screen reader speaks, in order: Accessible Name, Role, State. Read it aloud to check it sounds natural. | `Subscribe now, button.` |
-| 12 | **Notes** | Guidance for engineers — design intent no other column captures. Use `•` bullet points. Write just `•` if none needed. | `• Prefer a native <button> over a div with role="button" and a click handler` |
+| 3 | **Role** | The accessible role of a **linear focus stop** — something a user reading straight through the page actually lands on: a real HTML element (preferred) or an explicit `role` attribute. See Role Guide below. **For `heading`, always write the exact level** (`heading 2`, not just `heading`) — see "Heading Levels" below, this is the single highest-value thing to get right on a web spec. **Landmarks (`main`, `navigation`, `banner`, `contentinfo`, `region`) do NOT get their own row here** — a landmark is a structural boundary a user jumps to via a separate navigation index, not a stop in linear reading order, so forcing it into a row with placeholder `Actions: None` / `State: none` misrepresents it as something it isn't. Track landmark membership in a companion **Landmark Map** instead — see "Landmarks" below. | `none`, `button`, `heading 2`, `link` |
+| 4 | **Accessible Name** | What the screen reader reads as the element's name. Write `none` if the visible text, `alt`, or associated `<label>` already gives a clear name. | `none`, `Close`, `Free trial offer timeline` |
+| 5 | **State** | Current state if it changes. **Leave truly blank** (not `none`) for native form controls — a real `<input type="checkbox">`, `<input type="radio">`, `<select>` — the browser announces their state automatically from the element itself, and adding text risks a double announcement. For any custom ARIA widget (a `div` styled as a switch, a custom combobox), state is **never** automatic — write it explicitly. | *(blank)*, `expanded`, `checked`, `current page` |
+| 6 | **Grouping** | Always `Standalone`. Pure Web specs don't use native's `Parent of N (combined)` / `Merged into parent` model — every element a user can land on gets its own row and its own Order number, even inside a card that reads as one visual unit. See "Grouping — Always Standalone on Web" below. | `Standalone` |
+| 7 | **Hidden** | `Yes` for decorative elements removed from the accessibility tree. Engineers apply `aria-hidden="true"` (or `display:none`/`visibility:hidden`, which remove it as a side effect). Distinguish this from the opposite pattern — visually-hidden-but-accessible text (a `.sr-only` class) — which is a `Hidden: No` row with an explicit **Accessible Name** and nothing visible on screen. | `No`, `Yes` |
+| 8 | **Actions** | Every way to activate the element, in priority order. **Every action must have a keyboard path** — this is non-negotiable on the web (WCAG 2.1.1): if it responds to click or hover, it must also respond to a key. `Enter`/`Space` for buttons, `Enter` for links, arrow keys for composite widgets (tabs, listbox, menu) using a roving-tabindex pattern. Use `None` for non-interactive elements. | `Enter or Space activates`, `Arrow keys move between tabs`, `None` |
+| 9 | **Announce on change** | `Polite` = waits for a pause (toasts, confirmations). `Assertive` = interrupts immediately (errors, urgent updates). `None` = static content. | `None`, `Polite`, `Assertive` |
+| 10 | **Web example** | The full sentence the screen reader speaks, in order: Accessible Name, Role, State. Read it aloud to check it sounds natural. | `Subscribe now, button.` |
+| 11 | **Notes** | Guidance for engineers — design intent no other column captures. Use `•` bullet points. Write just `•` if none needed. | `• Prefer a native <button> over a div with role="button" and a click handler` |
 
-> **Column order matches the iOS and Android templates** wherever the concept exists,
-> so specs review side-by-side. Web shares TalkBack's shape most closely: both drop
-> Hint and use Announce on change in its place.
+> **Column order matches the iOS and Android templates** wherever the concept exists
+> (minus Layer, which Web drops), so specs still review side-by-side. Web shares
+> TalkBack's shape most closely: both drop Hint and use Announce on change in its place.
 
 ## Role Guide
 
@@ -58,7 +66,6 @@ requires you to hand-build all three yourself, and it's easy to miss one.
 | `radio` | An option in a single-select group | "radio button" + selected state |
 | `switch` | A custom on/off control styled as a toggle | "switch" + on/off state — **never automatic**, always author `aria-checked` |
 | `tab` | A tab in a tablist | "tab" + selected state |
-| `main` / `navigation` / `banner` / `contentinfo` / `region` / `complementary` / `search` / `form` | A landmark — lets users jump between page sections, the web's version of iOS's rotor / Android's heading navigation | Announces the landmark type and its label — see "Landmarks" below |
 
 ## Heading Levels — The Highest-Value Thing to Get Right on a Web Spec
 
@@ -67,6 +74,18 @@ this schema combined. Headings are how a screen reader user *skims* a web page �
 open a page and immediately pull up a list of every heading to decide where to go,
 the same way a sighted user's eye jumps straight to bold section titles. A missing or
 wrong level breaks that skim for the entire page, not just one row.
+
+**Unlike a landmark (see below), a heading genuinely is a row in the per-element
+table** — a user reading straight through the page actually lands on it, same as a
+button or a link. So heading level stays in that table's Role column. But on any page
+with more than a handful of headings, also produce a standalone **Heading Outline** —
+an indented list (`h1 > h2 > h3...`) built purely by walking the table's Role column
+top to bottom and pulling out every heading row. That outline is where a nesting
+mistake (a skipped level, two headings competing at the same level) actually becomes
+visible; it's easy to miss a single wrong `heading 3` sitting among 50 other rows, and
+obvious the moment it's pulled into its own list, the same way it would be obvious to
+the screen reader user skimming the real page. Deliver it alongside the row table, not
+instead of it — see [SKILL.md](SKILL.md)'s Heading Outline and Landmark Map guidance.
 
 **Levels must nest without skipping**, the same way you wouldn't skip from an `<h1>` to
 an `<h4>` in a document outline:
@@ -110,12 +129,26 @@ for page skimming) and add `• Also the card's link to the full story` in Notes
 than writing `link` and losing the heading level, or vice versa. Don't treat this as
 an either/or decision.
 
-## Landmarks — The Web's Version of Rotor / Heading Navigation
+## Landmarks — Belongs in a Map, Not a Row
 
 Landmarks let a screen reader user jump straight to `main`, skip repeated navigation,
 or ask "what page regions exist here" the way a sighted user's eye does from layout
 alone. A page with zero landmarks forces every user to walk the entire DOM linearly
 with no way to skip past a large nav or a long list of unrelated cards.
+
+**A landmark is not a row in the per-element table.** The table's Order/Role/Actions
+columns describe **linear focus stops** — things a user reading straight through the
+page actually lands on. A landmark isn't one of those: it's a structural boundary
+announced on entry, and it's the anchor for a *separate*, parallel navigation index
+(jump straight to `main`) that exists alongside — not inside — linear reading order. A
+landmark row with `Actions: None` and blank `State` misrepresents it as a focus stop
+it isn't, and worse, it steals an Order number from something that actually needs one.
+
+Track landmark membership in a standalone **Landmark Map** instead — which region
+each part of the page belongs to, independent of the row table. See
+[SKILL.md](SKILL.md)'s Heading Outline and Landmark Map guidance for how to structure
+and deliver it. What follows here is what a spec author needs to know to build that
+map correctly — not row-by-row column guidance.
 
 **Every page needs, at minimum:**
 
@@ -140,6 +173,30 @@ landmarks makes the landmark list itself the thing a user has to skim through
 linearly, defeating the point. Give each card a heading at the right level instead (see
 above), and reserve landmarks for the page's small number of major, structurally
 distinct areas.
+
+**The NYT homepage template is a real counter-example worth knowing, not a rule to
+copy blindly**: each topic-tag row ("U.S. Economy", "2026", "War in the Middle East")
+that sits above a package's lead story is, on the live site, its own `navigation`
+landmark labeled with that package's name — not plain links with no landmark wrapper.
+This is a deliberate exception to "a repeated module is usually a heading, not a
+landmark" above: these rows *are* navigation (a set of jump-to-topic links), so
+`navigation` is the correct role even though the pattern repeats many times down the
+page. Don't assume from the "don't over-landmark" guidance that repetition alone rules
+out `navigation` — check what the row actually does (navigate to a different topic
+page) rather than just how often it repeats. An interactive embed (a poll chart, a
+video carousel) inside a package can also get its own labeled `region` (e.g.
+`aria-label="gallery"`) for the same reason a sidebar would.
+
+**A landmark's `aria-label` and its actual role can drift apart — verify, don't
+assume.** The live NYT homepage's primary nav bar is a `navigation` landmark whose
+`aria-label` is literally `"main"` — a leftover or copy-paste label that has nothing to
+do with the `main` landmark role, and collides with it in a landmark reader's list
+(two entries that both say "main" with different roles). If you're documenting an
+existing live page rather than a new design, get the labels from a real accessibility
+inspector or the actual markup — don't infer them from the visual package title, since
+the shipped label can be stale, wrong, or copied from something else entirely. Flag
+a mismatch like this explicitly in the Landmark Map's notes rather than silently
+"fixing" it to what the label should say.
 
 ## Links — Getting Them Right Matters as Much as Headings
 
@@ -226,6 +283,15 @@ so engineers know to double check.
 Avoid `tabindex` values greater than `0` — they create a second, competing order for
 keyboard users on top of the DOM order and are almost always a sign something should
 have been reordered in markup instead.
+
+**A real example of visual order lying about DOM order**: the NYT homepage template
+reads top-to-bottom across visual bands, then **right-to-left** within a band — not
+the left-to-right a sighted scan would suggest. See
+[SKILL.md](SKILL.md#row-order--priority-not-position)'s Row Order exception for the
+full rule (including why a wide lead package still outranks right-to-left against a
+narrower adjacent module in the same row). Verify this kind of template-specific
+convention against the real page rather than assuming a generic default — it's exactly
+the sort of thing that's invisible from a screenshot.
 
 **The mismatch can also be deliberate, not accidental — and that's worth designing for.**
 A story/article card typically shows the photo above the headline visually. Give the

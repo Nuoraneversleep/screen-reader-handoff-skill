@@ -154,11 +154,13 @@ For every visible element on screen, ask:
 - Output as **TSV** (tab-separated values).
 - One header row, one row per element a screen reader user can focus on.
 - Order rows by **announcement priority**, not visual position — see below.
-- Set **Layer** on every row to `Native` or `Web`. On an all-native screen every row is
-  `Native`; on an all-web screen every row is `Web` and you're using
-  [web-schema.md](web-schema.md)'s columns instead of the native ones; on a hybrid
-  screen this decides which API and which team owns the row, so read the
-  hybrid-screens step before filling it in.
+- Set **Layer** on every row to `Native` or `Web` — **native tables only**. On an
+  all-native screen every row is `Native`. On an all-web screen, skip this column
+  entirely — you're using [web-schema.md](web-schema.md)'s 11 columns, which drop
+  Layer since every row would be `Web` anyway and the column would carry zero
+  information. On a hybrid screen, the *combined* table keeps Layer, since it decides
+  which API and which team owns each row — read the hybrid-screens step before filling
+  it in.
 - Use `none` (lowercase) for empty cells, with one exception: leave the Android
   **State** cell truly blank for Switch, Checkbox, Radio button, Toggle button,
   selectable cells, and disabled controls. The system announces those binary states
@@ -185,6 +187,20 @@ announcement order:
 When priority order differs from visual order, say so in the Notes column. Android
 needs `traversalIndex` plus `isTraversalGroup` on a shared parent; iOS needs
 `accessibilitySortPriority`. Neither happens by default.
+
+**Exception — the NYT homepage (and similarly-built multi-column module grids):**
+reading order is top-to-bottom across visual bands first, then **right-to-left**
+within a band — not left-to-right. A top band with a wide lead story on the left and a
+narrower module on the right (e.g. the lead news story beside a smaller feature card)
+announces the **left** story first, because top-to-bottom between bands outranks the
+right-to-left rule — the two stories are in the same visual row, but the lead package
+still reads as the first band. Right-to-left only decides order **between modules that
+are genuine same-row siblings** at the same structural level, not between a lead
+package and an adjacent rail. This is a DOM-order fact about how the homepage template
+is actually built (see [web-schema.md](web-schema.md)'s Order section on DOM vs.
+visual order) — verify it against the real page or a screen reader test rather than
+assuming standard left-to-right, and say so explicitly in Notes wherever a homepage
+spec's Order column relies on this.
 
 ### 5. Hybrid Screens — Fill In the Layer Column
 
@@ -298,22 +314,100 @@ After generating, verify:
       its children leaked in as rows either
 - [ ] Navigation chrome is first; terms precede any CTA they govern
 - [ ] Content occluded by an overlay or paywall is `Hidden: Yes`, with its real text kept
-- [ ] Every row has a **Layer**, and anything owned by the web layer is flagged as such
-      in the Notes so it routes to the right team
+- [ ] Every row has a **Layer** on native and hybrid tables, and anything owned by the
+      web layer is flagged as such in the Notes so it routes to the right team. A pure
+      Web table has no Layer column at all — see [web-schema.md](web-schema.md)
 - [ ] The **Example** column reads naturally — read it aloud to check
 - [ ] No blank cells — use `none`, except Android **State** for auto-announced conditions
 - [ ] **On Web specifically**: every `heading` row has an exact level (`heading 2`, never
       a bare `heading`), levels nest without skipping, and a repeated module reuses the
       same level on every instance — see [web-schema.md](web-schema.md)'s Heading Levels
-      section, this is the single highest-value thing to get right on a web spec
+      section, this is the single highest-value thing to get right on a web spec. On any
+      page with more than a handful of headings, verify this with a **Heading Outline**
+      (see below) rather than eyeballing the row table
 - [ ] **On Web specifically**: the page's major regions (`main`, `navigation`, `banner`,
-      `contentinfo`) are identified, and any repeated `navigation` landmarks have distinct
-      names — see [web-schema.md](web-schema.md)'s Landmarks section. A repeated card
-      module should be a heading, not its own landmark
+      `contentinfo`) are identified in a standalone **Landmark Map** (see below), NOT as
+      rows in the per-element table — a landmark isn't a linear focus stop, so it doesn't
+      belong in a table of Order/Role/Actions. Any repeated `navigation` landmarks have
+      distinct names, and a repeated card module is a heading, not its own landmark — see
+      [web-schema.md](web-schema.md)'s Landmarks section
 - [ ] **On Web specifically**: every link's Accessible Name makes sense pulled out of
       context, in the page's own link list — no bare "Read more"/"Click here" repeated
       across cards, no icon-only link missing a name, and any link that opens in a new
       tab says so as part of its name — see [web-schema.md](web-schema.md)'s Links section
+
+### 6.5. On Web — Add a Heading Outline and Landmark Map
+
+These are two small companion documents, not a replacement for the row table — the row
+table is still the only place carrying implementation detail (accessible names,
+actions, link destinations) that engineering builds against. Produce them alongside
+the row table whenever the page has more than a handful of headings, more than one or
+two landmarks, or a reviewer needs to verify page-level structure at a glance rather
+than reading 50 rows top to bottom.
+
+**Why not just add landmark rows to the table?** A landmark isn't a linear focus
+stop — nobody reading straight through the page "lands on" a `main` boundary the way
+they land on a button. It's the anchor for a *separate*, parallel jump-navigation
+index. Forcing it into a row gives it a fake `Actions: None` / blank `State` it
+doesn't actually have, and worse, it can eat an Order number that should belong to a
+real focus stop. Headings are different: a heading genuinely is a focus stop *and* a
+member of the heading-skim index, so heading level correctly stays in the row table's
+Role column — the outline below is a second view of that same data, not a place to
+move it to.
+
+**Heading Outline** — walk the row table's Role column top to bottom, pull out every
+heading row, and render it as a plain indented list:
+
+```
+h1  Discover all that's new. With all of The Times.
+  h2  Subscribers enjoy more with New York Times All Access.
+    h3  News
+    h3  Games
+    h3  Cooking
+    h3  Audio
+    h3  Wirecutter
+    h3  The Athletic
+  h2  Make The Times part of your day. At your own pace.
+```
+
+A skipped level or a heading competing at the wrong level is far easier to spot in
+this shape than buried among 50 other rows — the same reason it's the first thing a
+screen reader user's own heading list surfaces.
+
+**Landmark Map** — a three-column table of every landmark on the page, independent of
+the row table. This mirrors what a real accessibility inspector (e.g. a browser
+extension's landmarks panel) reports, so it reads the same way a reviewer running that
+tool against the shipped page would see it:
+
+| Element | Role | Label |
+|---------|------|-------|
+| `header` | `banner` | *(none)* |
+| `main` | `main` | *(none)* |
+| `nav` | `navigation` | New York Times All Access |
+| `nav` | `navigation` | Other subscriptions |
+| `footer` | `contentinfo` | *(none)* |
+
+- **Element** — the real HTML tag the landmark is authored with. Most landmark roles
+  come from a dedicated tag (`<header>` → `banner`, `<nav>` → `navigation`, `<main>` →
+  `main`, `<footer>` → `contentinfo`), but `<section>`/`<div role="region">` both
+  surface as `region` in the Role column, so Element is what distinguishes them for
+  engineering.
+- **Role** — the landmark role as a screen reader announces it. Same vocabulary as
+  [web-schema.md](web-schema.md)'s Landmarks section.
+- **Label** — the landmark's accessible name (`aria-label` or `aria-labelledby`),
+  exactly as it would be spoken. Leave `*(none)*` only when a page truly has just one
+  of that role — the moment two landmarks share a role, at least one needs a label,
+  or they announce as indistinguishable duplicates. Flag any duplicate label the same
+  way a real landmarks-inspector tool does: as a warning, not a silent gap.
+
+Call out gaps explicitly in a note below the table — a missing `main`, two landmarks
+of the same role sharing one label (or both unlabeled), more landmarks than the page
+actually needs (see [web-schema.md](web-schema.md)'s Landmarks section on
+over-landmarking).
+
+Deliver both as plain text/markdown blocks alongside the row table — they don't need
+`use_figma` rendering or canvas annotation the way the row table does in Step 7, since
+they aren't tied to individual on-screen elements the same way.
 
 ### 7. Deliver — TSV, Rendered Table, or Annotated Design
 
