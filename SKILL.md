@@ -318,8 +318,14 @@ After generating, verify:
       follows visual/DOM order
 - [ ] Content occluded by an overlay or paywall is `Hidden: Yes`, with its real text kept
 - [ ] Every row has a **Layer** on native and hybrid tables, and anything owned by the
-      web layer is flagged as such in the Notes so it routes to the right team. A pure
-      Web table has no Layer column at all — see [web-schema.md](web-schema.md)
+      web layer is flagged as such in the Notes so it routes to the right team. **A pure
+      Web table has no Layer column at all, full stop — not even one filled with `Web`
+      on every row.** This has slipped through before: if you're rendering into Figma,
+      grep the actual header row you're about to build/edit for the literal string
+      `Layer` before calling it done — see
+      [figma-canvas.md](figma-canvas.md#read-this-first--a-web-table-with-a-layer-column-is-always-wrong)
+      — and if the table already exists in the file, check it the same way rather than
+      trusting that an earlier pass got it right
 - [ ] The **Example** column reads naturally — read it aloud to check
 - [ ] No blank cells — use `none`, except Android **State** for auto-announced conditions
 - [ ] **On Web specifically**: every `heading` row has an exact level (`heading 2`, never

@@ -8,6 +8,29 @@ The script below renders one table as a native auto-layout frame: a title block,
 header row, and one row per element. Every cell is real text, so reviewers can correct
 a label in place.
 
+## Read this first — a Web table with a `Layer` column is always wrong
+
+**On a pure Web spec, `COLS` must be the 11-entry array with no `Layer` — never copy
+the 12-column Native/Hybrid array and just fill `Layer` with `'Web'` on every row.**
+This has actually happened across sessions on the same file: multiple past tables were
+built with `COLS = ['Order','Component','Layer','Role',...]` and `'Web'` written into
+every row's Layer cell. That's not wrong data, but it's the wrong schema — a column
+that is `'Web'` on 100% of rows carries zero information and just adds a column
+engineering has to skim past, which is exactly what [web-schema.md](web-schema.md)'s
+Layer-column note warns against. `Layer` only belongs in a **Hybrid** combined table
+(see [SKILL.md § 5](SKILL.md#5-hybrid-screens--fill-in-the-layer-column)), where rows
+genuinely split between two teams.
+
+**Before rendering, or when touching a table already in the file, check:** if every
+row's Layer value would be identical, delete the column — don't render it "for
+consistency with the native template." If you inherit or are asked to fix an existing
+Figma table, grep its header row for `Layer` first (`table.children.find(c => c.name
+=== 'Header row')`, read its cell text) rather than assuming it already matches the
+schema; stale tables from before this rule was written can still be sitting in the
+file. Fixing one means rebuilding it with the 11-column array and the same row data
+minus that one column, at the same position, then deleting the old frame — don't leave
+both versions in the file.
+
 ## Read this first — three constraints that will bite you
 
 Auto-layout sizing has rules that produce confusing errors rather than obvious ones.
