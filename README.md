@@ -17,7 +17,7 @@ No screen reader expertise required — the skill guides you through creating st
 - **Annotates the design itself** with numbered badges and dashed outlines tied to
   each row's Order number, so a reviewer can match a row to its element at a glance
 - Orders rows by **announcement priority** rather than visual position — navigation
-  chrome first, terms before the CTA they govern
+  chrome first, everything else in visual/DOM order
 - Handles **hybrid screens** (native shell + WebView) as **one combined table** — a
   single continuous Order sequence with each row marked `Native` or `Web`, instead of
   two disconnected tables that hide whether the seam actually reads in order
@@ -114,12 +114,11 @@ The examples file explains key accessibility patterns with rationale:
 - **Text with embedded links** needs rotor access guidance
 - **Decorative elements** (dividers, background shapes) should be hidden from screen readers
 - **Navigation chrome** is announced first, even when it sits at the bottom of the screen
-- **Terms and consent copy** precede any CTA they govern, regardless of visual position
 - **Occluded content** (behind a paywall or overlay) is hidden but keeps its real text
 - **Hybrid screens** get one combined table with a continuous Order sequence, each row marked `Native` or `Web` — the layer decides the API and the owning team
 - **Web reading order** is DOM order, which can silently diverge from visual order through ordinary CSS (`flex`/`grid` order, `position`) — the biggest web-specific risk with no native equivalent
 - **Custom ARIA widgets** (a styled `div role="switch"`) never auto-announce state — only genuine native HTML controls do
-- **Annotated Order numbers** on the design surface priority-over-position ordering as a visible fact — a terms block's badge can sit below a CTA's while carrying a lower number
+- **Annotated Order numbers** on the design surface priority-over-position ordering as a visible fact — a bottom nav bar's badge can carry the lowest number even though it sits at the bottom of the screen
 
 ## Contributing
 

@@ -178,11 +178,13 @@ announcement order:
 1. **Navigation chrome first** — toolbars, app bars, and bottom action bars (NYT's
    "charm bracelet") come first regardless of where they sit on screen. A bottom bar
    at y=787 is still announced before the headline at y=43.
-2. **Terms, legal, and consent copy next** — always before the CTA it governs. A
-   sighted user catches terms below a Subscribe button in peripheral vision before
-   deciding; a screen reader user will activate the button as soon as they hear it
-   and never reach the terms.
-3. **Everything else** — top-to-bottom, left-to-right.
+2. **Everything else** — top-to-bottom, left-to-right, including terms, legal, and
+   consent copy. Follow visual/DOM order rather than reordering terms ahead of the CTA
+   they govern — a screen reader user who activates a purchase button before reaching
+   terms placed after it is hearing the screen in the order it was actually built, the
+   same experience a sighted user gets scanning top to bottom. If a specific design
+   has a real legal requirement that terms be heard first, that's a call to raise with
+   the user rather than something this skill applies automatically.
 
 When priority order differs from visual order, say so in the Notes column. Android
 needs `traversalIndex` plus `isTraversalGroup` on a shared parent; iOS needs
@@ -312,7 +314,8 @@ After generating, verify:
 - [ ] Decorative images are excluded (not in the table)
 - [ ] OS chrome (status bar, home indicator, notch) has no row at all — and none of
       its children leaked in as rows either
-- [ ] Navigation chrome is first; terms precede any CTA they govern
+- [ ] Navigation chrome is first; everything else, including terms and legal copy,
+      follows visual/DOM order
 - [ ] Content occluded by an overlay or paywall is `Hidden: Yes`, with its real text kept
 - [ ] Every row has a **Layer** on native and hybrid tables, and anything owned by the
       web layer is flagged as such in the Notes so it routes to the right team. A pure
@@ -422,8 +425,8 @@ constraints that otherwise cause hard-to-debug failures. Also **annotate the fra
 itself**: a numbered badge and dashed outline on top of every element that has a row,
 using that row's **Order** number. A table next to the frame still leaves the reader to
 match rows to shapes by eye — the numbers close that gap, and they make
-priority-over-position order (nav chrome first, terms before the CTA) visible on the
-canvas instead of only asserted in the Notes column. See
+priority-over-position order (nav chrome first, everything else in visual order)
+visible on the canvas instead of only asserted in the Notes column. See
 [figma-annotations.md](figma-annotations.md) for the script. Skip a badge for any row
 with a blank Order (merged-into-parent or Hidden rows).
 

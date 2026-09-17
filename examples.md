@@ -15,13 +15,13 @@ Order	Component	Layer	Trait	Label	Value	Grouping	Hidden	Actions	Hint	Example	Not
 3	Plan title	Native	none	none	none	Standalone	No	none	none	All Access	•
 4	Plan description	Native	none	none	none	Standalone	No	none	none	News, plus Games, Cooking, Audio, Wirecutter and The Athletic.	•
 5	Learn more dropdown	Native	button	Learn more	collapsed	Standalone	No	Double tap to expand or collapse	Shows or hides subscription benefit details.	Learn more, collapsed, button. Shows or hides subscription benefit details.	• Value changes between "expanded" and "collapsed" • Hint tells the user what the accordion controls
-6	Terms & Conditions	Native	none	[Terms & Conditions copy]	none	Standalone	No	Rotate two fingers opens rotor	Use the rotor to access links	[T&C copy with [cancel] link callout]	• The cancel link inside the text block should be accessible via rotor • Hint teaches users how to find the link
-7	Purchase channel label	Native	header	none	none	Standalone	No	none	none	Buy through The New York Times, heading	• Marked as header — lets users jump between purchase options via rotor
-8	NYT purchase button	Native	button	$30, discounted to $4 per month	none	Standalone	No	Double tap opens external checkout	Opens an external website.	$30, discounted to $4 per month, button. Opens an external website.	• Custom label combines strikethrough price and sale price into one clear announcement • Hint warns the user they'll leave the app
-9	NYT billing details	Native	none	none	none	Standalone	No	none	none	Introductory offer: billed as $4 every four weeks for your first 6 months, then $30 every four weeks thereafter.	•
-10	Purchase channel label	Native	header	none	none	Standalone	No	none	none	Buy through Apple, heading	•
-11	Apple purchase button	Native	button	$35, discounted to $5 per month	none	Standalone	No	Double tap to subscribe	none	$35, discounted to $5 per month, button	• No external link hint needed — this stays in the app
-12	Apple billing details	Native	none	none	none	Standalone	No	none	none	Introductory offer: billed as $5 every calendar month for your first 6 months, then $35 every calendar month thereafter.	•
+6	Purchase channel label	Native	header	none	none	Standalone	No	none	none	Buy through The New York Times, heading	• Marked as header — lets users jump between purchase options via rotor
+7	NYT purchase button	Native	button	$30, discounted to $4 per month	none	Standalone	No	Double tap opens external checkout	Opens an external website.	$30, discounted to $4 per month, button. Opens an external website.	• Custom label combines strikethrough price and sale price into one clear announcement • Hint warns the user they'll leave the app
+8	NYT billing details	Native	none	none	none	Standalone	No	none	none	Introductory offer: billed as $4 every four weeks for your first 6 months, then $30 every four weeks thereafter.	•
+9	Purchase channel label	Native	header	none	none	Standalone	No	none	none	Buy through Apple, heading	•
+10	Apple purchase button	Native	button	$35, discounted to $5 per month	none	Standalone	No	Double tap to subscribe	none	$35, discounted to $5 per month, button	• No external link hint needed — this stays in the app
+11	Apple billing details	Native	none	none	none	Standalone	No	none	none	Introductory offer: billed as $5 every calendar month for your first 6 months, then $35 every calendar month thereafter.	•
+12	Terms & Conditions	Native	none	[Terms & Conditions copy]	none	Standalone	No	Rotate two fingers opens rotor	Use the rotor to access links	[T&C copy with [cancel] link callout]	• The cancel link inside the text block should be accessible via rotor • Hint teaches users how to find the link
 13	Continue link	Native	button	Continue without subscribing	none	Standalone	No	Double tap to dismiss	none	Continue without subscribing, button	•
 ```
 
@@ -37,9 +37,9 @@ Order	Component	Layer	Trait	Label	Value	Grouping	Hidden	Actions	Hint	Example	Not
 
 **Accordion state in the Value column** (row 5). "expanded" or "collapsed" tells the user what mode the accordion is in *before* they tap it. The hint explains what the accordion controls.
 
-**Links inside text blocks** (row 6). When text contains a tappable link (like "cancel"), you can't just double-tap to activate it — the user needs to use the rotor. The hint teaches them how.
+**Links inside text blocks** (row 12). When text contains a tappable link (like "cancel"), you can't just double-tap to activate it — the user needs to use the rotor. The hint teaches them how.
 
-**Terms are announced before the buttons they govern** (row 6). On screen, the T&C copy sits at the *bottom*, below both purchase buttons. In the table it comes before them. A sighted user catches the terms in peripheral vision while deciding; a VoiceOver user moves strictly sequentially and will activate a purchase button the moment they hear it — never reaching terms placed after it. Set `accessibilitySortPriority` (iOS) or `traversalIndex` + `isTraversalGroup` (Android), and say so in the Notes column.
+**Terms follow their natural visual position** (row 12). On screen, the T&C copy sits at the bottom, below both purchase buttons — the table follows that same order rather than reordering it ahead of the CTAs. A VoiceOver user reaches it in the sequence it was actually built, the same order a sighted user encounters it scanning top to bottom.
 
 ---
 
@@ -85,10 +85,10 @@ Order	Component	Layer	Trait	Label	Value	Grouping	Hidden	Actions	Hint	Example	Not
 4	Price information	Native	none	$4/month for your first 12 months, discounted from $25. [offer subtext]	none	Standalone	No	none	none	$4/month for your first 12 months, discounted from $25. Billed as $4 every 4 weeks for your first twelve months. Cancel or pause anytime.	•
 5	Value prop carousel	Native	Adjustable	Subscriber value carousel, containing 6 items	1 of 6, essential reporting	Standalone	No	Swipe up to go to next card, swipe down to go to previous card	Swipe up or down with one finger to advance carousel	Subscriber value carousel, containing 6 items, adjustable. 1 of 6, essential reporting. Swipe up or down with one finger to advance carousel.	• Read the focused card's header when user swipes to next card • The Value column updates with each swipe: "2 of 6, daily puzzles" etc.
 6	Value proposition	Native	none	none	none	Standalone	No	none	none	Your subscription includes: Unlimited access to news, Games, Cooking, Audio, Wirecutter and The Athletic.	•
-7	Terms & Conditions	Native	none	[Terms & Conditions copy]	none	Standalone	No	Rotate two fingers opens rotor	Use the rotor to access links	[T&C copy with [cancel] link callout]	• Call out the cancel link
-8	CTA button	Native	button	Subscribe now	none	Standalone	No	Double tap opens checkout page	Opens an external website.	Subscribe now, button. Opens an external website.	•
-9	Body text	Native	none	none	none	Standalone	No	none	none	This purchase will be made through The New York Times.	•
-10	CTA button	Native	button	Continue without subscribing	none	Standalone	No	Double tap to dismiss	none	Continue without subscribing, button	•
+7	CTA button	Native	button	Subscribe now	none	Standalone	No	Double tap opens checkout page	Opens an external website.	Subscribe now, button. Opens an external website.	•
+8	Body text	Native	none	none	none	Standalone	No	none	none	This purchase will be made through The New York Times.	•
+9	CTA button	Native	button	Continue without subscribing	none	Standalone	No	Double tap to dismiss	none	Continue without subscribing, button	•
+10	Terms & Conditions	Native	none	[Terms & Conditions copy]	none	Standalone	No	Rotate two fingers opens rotor	Use the rotor to access links	[T&C copy with [cancel] link callout]	• Call out the cancel link
 ```
 
 ### Best Practices Highlighted
@@ -103,7 +103,7 @@ Order	Component	Layer	Trait	Label	Value	Grouping	Hidden	Actions	Hint	Example	Not
 
 ## Example 4: Same Screen, Android TalkBack
 
-The same subscription paywall from Example 1, but for Android TalkBack. Rows are listed in announcement order — note that Terms & Conditions precedes the purchase buttons even though it sits below them on screen.
+The same subscription paywall from Example 1, but for Android TalkBack. Rows are listed in announcement order, which follows the screen's visual order — Terms & Conditions is announced where it sits on screen, after the purchase buttons.
 
 ```
 Order	Component	Layer	Element Type	Description	State	Grouping	Hidden	Action	Announce on change	TalkBack example	Notes
@@ -112,13 +112,13 @@ Order	Component	Layer	Element Type	Description	State	Grouping	Hidden	Action	Anno
 3	Plan title	Native	None	none	none	Standalone	No	None	None	All Access	•
 4	Plan description	Native	None	none	none	Standalone	No	None	None	News, plus Games, Cooking, Audio, Wirecutter and The Athletic.	•
 5	Learn more dropdown	Native	Button	Learn more	Collapsed	Standalone	No	Expand	None	Learn more, Collapsed, button. Double tap to expand.	• Announce expanded/collapsed state change politely
-6	Terms & Conditions	Native	None	[Terms & Conditions copy with cancel link]	none	Parent of 1	No	None	None	[T&C copy]. Cancel, link.	• Cancel link must be reachable via linear swipe
-7	Purchase channel label	Native	Heading	none	none	Standalone	No	None	None	Buy through The New York Times, heading	•
-8	NYT purchase button	Native	Button	$30, discounted to $4 per month	none	Standalone	No	Open in browser	None	$30, discounted to $4 per month, button. Double tap to activate. Opens external browser.	• Warn the user before leaving the app
-9	NYT billing details	Native	None	none	none	Standalone	No	None	None	Introductory offer: billed as $4 every four weeks for your first 6 months, then $30 every four weeks thereafter.	•
-10	Purchase channel label	Native	Heading	none	none	Standalone	No	None	None	Buy through Apple, heading	•
-11	Apple purchase button	Native	Button	$35, discounted to $5 per month	none	Standalone	No	Subscribe	None	$35, discounted to $5 per month, button. Double tap to activate.	•
-12	Apple billing details	Native	None	none	none	Standalone	No	None	None	Introductory offer: billed as $5 every calendar month for your first 6 months, then $35 every calendar month thereafter.	•
+6	Purchase channel label	Native	Heading	none	none	Standalone	No	None	None	Buy through The New York Times, heading	•
+7	NYT purchase button	Native	Button	$30, discounted to $4 per month	none	Standalone	No	Open in browser	None	$30, discounted to $4 per month, button. Double tap to activate. Opens external browser.	• Warn the user before leaving the app
+8	NYT billing details	Native	None	none	none	Standalone	No	None	None	Introductory offer: billed as $4 every four weeks for your first 6 months, then $30 every four weeks thereafter.	•
+9	Purchase channel label	Native	Heading	none	none	Standalone	No	None	None	Buy through Apple, heading	•
+10	Apple purchase button	Native	Button	$35, discounted to $5 per month	none	Standalone	No	Subscribe	None	$35, discounted to $5 per month, button. Double tap to activate.	•
+11	Apple billing details	Native	None	none	none	Standalone	No	None	None	Introductory offer: billed as $5 every calendar month for your first 6 months, then $35 every calendar month thereafter.	•
+12	Terms & Conditions	Native	None	[Terms & Conditions copy with cancel link]	none	Parent of 1	No	None	None	[T&C copy]. Cancel, link.	• Cancel link must be reachable via linear swipe
 13	Continue link	Native	Button	Continue without subscribing	none	Standalone	No	Dismiss	None	Continue without subscribing, button. Double tap to activate.	•
 ```
 

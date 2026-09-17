@@ -4,10 +4,9 @@ A rendered table sitting next to a frame still makes the reader match rows to sh
 by eye. This script closes that gap: it draws a numbered badge and a dashed outline
 directly on top of the frame, one per row, using the same number as that row's
 **Order** column. A reviewer can then point at any element on screen and read off
-which row documents it — and see priority-over-position ordering (nav chrome first,
-terms before the CTA) as a fact about the canvas instead of a claim in the Notes
-column, since a term's badge can sit visually below a CTA's while still carrying a
-lower number.
+which row documents it — and see priority-over-position ordering (nav chrome first)
+as a fact about the canvas instead of a claim in the Notes column, since a bottom nav
+bar's badge can carry the lowest number even though it sits at the bottom of the frame.
 
 Load the `figma-use` skill first — it is a mandatory prerequisite for `use_figma`.
 
